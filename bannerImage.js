@@ -7,7 +7,7 @@ const db = require('./config/db')
 const cors = require('cors');
 
 const app = express();
-const port = 3000;
+const port = 4000;
 app.use(cors());
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 // Configure Multer for file uploads

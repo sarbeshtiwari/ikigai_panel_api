@@ -1,0 +1,11 @@
+meta details --- Done
+banner --- Done
+home banner multiple banner upload --- pending
+about us --- Done (UI for banner image left)
+ourServices --- Same as about
+ourTeam --- Same as about
+blogs --- Same as about
+ourSpeciality --- same as about
+testimonial --- pending
+faq -- same as about
+enquiry -- pending

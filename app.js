@@ -13,6 +13,8 @@ const ourTeam = require('./routes/team');
 const blogs = require('./routes/blogs');
 const metaDetails = require('./routes/metaDetails');
 const bannerImage = require('./routes/bannerImages');
+const ourSpecialities = require('./routes/specialities');
+const faqs = require('./routes/faq');
 
 app.use(cors());
 // Middleware to parse JSON bodies
@@ -31,6 +33,8 @@ app.use('/team', ourTeam);
 app.use('/blog', blogs);
 app.use('/meta', metaDetails);
 app.use('/bannerImage', bannerImage);
+app.use('/ourSpecialities', ourSpecialities);
+app.use('/faq', faqs);
 
 
 // Start the server
