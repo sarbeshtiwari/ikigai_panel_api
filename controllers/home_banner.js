@@ -1,14 +1,82 @@
 const path = require('path');
 const fs = require('fs');
+const multer = require('multer');
 const {
-  createImageEntry,
+  insertBanner,
   getAllHomeBanners,
   updateHomeBannerStatus,
   getHomeBannerByID,
   deleteHomeBannerFromDB,
   getImagePathByID,
-  updateHomeBannerEntry
+  updateHomeBanner
 } = require('../model/home_banner');
+
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+      let folder = '';
+      if (file.fieldname === 'desktop_image') {
+          folder = 'uploads/home_banner/desktop';
+      } else if (file.fieldname === 'mobile_image') {
+          folder = 'uploads/home_banner/mobile';
+      } else if (file.fieldname === 'tablet_image') {
+          folder = 'uploads/home_banner/tablet';
+      }
+      cb(null, folder);
+  },
+  filename: (req, file, cb) => {
+      const filename = req.body.filename || Date.now() + path.extname(file.originalname);
+      cb(null, filename);
+  }
+});
+
+const upload = multer({ storage: storage });
+
+const saveHomeBanner = (req, res) => {
+  const id = req.params.id;
+  const alt_tags_desktop = req.body['alt_tag_desktop'] || [];
+  const alt_tags_mobile = req.body['alt_tag_mobile'] || [];
+  const alt_tags_tablet = req.body['alt_tag_tablet'] || [];
+
+  const desktopImagePaths = req.files['desktop_image'] || [];
+  const mobileImagePaths = req.files['mobile_image'] || [];
+  const tabletImagePaths = req.files['tablet_image'] || [];
+
+  const banners = [];
+  for (let i = 0; i < desktopImagePaths.length; i++) {
+      banners.push({
+          desktop_image_path: desktopImagePaths[i] ? desktopImagePaths[i].filename : '',
+          mobile_image_path: mobileImagePaths[i] ? mobileImagePaths[i].filename : '',
+          tablet_image_path: tabletImagePaths[i] ? tabletImagePaths[i].filename : '',
+          alt_tag_desktop: alt_tags_desktop[i] || '',
+          alt_tag_mobile: alt_tags_mobile[i] || '',
+          alt_tag_tablet: alt_tags_tablet[i] || ''
+      });
+  }
+
+  if (id) {
+      banners.forEach((banner, index) => {
+        updateHomeBanner(id, banner, (err) => {
+              if (err) {
+                  console.error('Error updating banner:', err);
+                  res.status(500).send('Error updating banner');
+                  return;
+              }
+          });
+      });
+      res.send('Banners updated successfully');
+  } else {
+      banners.forEach((banner) => {
+          insertBanner(banner, (err) => {
+              if (err) {
+                  console.error('Error inserting banner:', err);
+                  res.status(500).send('Error inserting banner');
+                  return;
+              }
+          });
+      });
+      res.send('Banners added successfully');
+  }
+};
 
 // Middleware for handling file upload (using multer)
 // const multer = require('multer');
@@ -138,6 +206,8 @@ module.exports = {
   getBannerByID,
   updateBannerStatus,
   deleteBanner,
+  saveHomeBanner,
+  upload
   // updateBanner
 };
 

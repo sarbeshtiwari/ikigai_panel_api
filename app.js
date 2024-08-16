@@ -15,6 +15,11 @@ const metaDetails = require('./routes/metaDetails');
 const bannerImage = require('./routes/bannerImages');
 const ourSpecialities = require('./routes/specialities');
 const faqs = require('./routes/faq');
+const testimonials = require('./routes/testimonials')
+const userQuery = require('./routes/query');
+const appointment = require('./routes/appointment');
+const authRoutes = require('./routes/authRoutes');
+const protectedRoutes = require('./routes/protectedRoutes');
 
 app.use(cors());
 // Middleware to parse JSON bodies
@@ -35,6 +40,11 @@ app.use('/meta', metaDetails);
 app.use('/bannerImage', bannerImage);
 app.use('/ourSpecialities', ourSpecialities);
 app.use('/faq', faqs);
+app.use('/testimonials', testimonials);
+app.use('/userQuery', userQuery);
+app.use('/appointment', appointment);
+app.use('/auth', authRoutes);
+app.use('/api', protectedRoutes);
 
 
 // Start the server

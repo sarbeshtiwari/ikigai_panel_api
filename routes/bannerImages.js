@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { upload, saveBanner, getBannerById } = require('../controllers/bannerImages');
+const { upload, saveBanner, getBannerById, UpdateBannerStatus, deleteBanner } = require('../controllers/bannerImages');
 
 // Routes
 router.post('/saveBanner/:id?', upload.fields([
@@ -10,5 +10,12 @@ router.post('/saveBanner/:id?', upload.fields([
 ]), saveBanner);
 
 router.get('/getBanner/:id', getBannerById);
+
+// Route to update Banner status
+router.patch('/updateStatus', UpdateBannerStatus);
+
+
+// Route to delete Banner
+router.delete('/delete/:id', deleteBanner);
 
 module.exports = router;

@@ -1,17 +1,24 @@
 const db = require('../config/db');
 
-// Create an entry in the home_banner table
-const createImageEntry = (meta_title, meta_keywords, meta_description, heading, alt_tag, image_path) => {
-  const query = 'INSERT INTO home_banner (meta_title, meta_keywords, meta_description, heading, alt_tag, image_path) VALUES (?, ?, ?, ?, ?, ?)';
-  return new Promise((resolve, reject) => {
-    db.query(query, [meta_title, meta_keywords, meta_description, heading, alt_tag, image_path], (err, results) => {
-      if (err) {
-        reject(err);
-      } else {
-        resolve(results.insertId);
-      }
-    });
-  });
+// // Create an entry in the home_banner table
+// const createImageEntry = (meta_title, meta_keywords, meta_description, heading, alt_tag, image_path) => {
+//   const query = 'INSERT INTO home_banner (meta_title, meta_keywords, meta_description, heading, alt_tag, image_path) VALUES (?, ?, ?, ?, ?, ?)';
+//   return new Promise((resolve, reject) => {
+//     db.query(query, [meta_title, meta_keywords, meta_description, heading, alt_tag, image_path], (err, results) => {
+//       if (err) {
+//         reject(err);
+//       } else {
+//         resolve(results.insertId);
+//       }
+//     });
+//   });
+// };
+
+// Function to insert a new banner
+const insertBanner = (bannerData, callback) => {
+  const query = `INSERT INTO home_banner (desktop_image_path, mobile_image_path, tablet_image_path, alt_tag_desktop, alt_tag_mobile, alt_tag_tablet) 
+                 VALUES (?, ?, ?, ?, ?, ?)`;
+  db.query(query, [bannerData.desktop_image_path, bannerData.mobile_image_path, bannerData.tablet_image_path, bannerData.alt_tag_desktop, bannerData.alt_tag_mobile, bannerData.alt_tag_tablet], callback);
 };
 
 // Get all home banners
@@ -71,25 +78,37 @@ const getImagePathByID = (id) => {
   });
 };
 
-// Update home banner entry
-const updateHomeBannerEntry = (id, meta_title, meta_keywords, meta_description, heading, alt_tag, image_path) => {
-  const query = 'UPDATE home_banner SET meta_title = ?, meta_keywords = ?, meta_description = ?, heading = ?, alt_tag = ?, image_path = ? WHERE id = ?';
-  return new Promise((resolve, reject) => {
-    db.query(query, [meta_title, meta_keywords, meta_description, heading, alt_tag, image_path, id], (err, results) => {
-      if (err) return reject(err);
-      resolve(results);
-    });
-  });
+// // Update home banner entry
+// const updateHomeBannerEntry = (id, meta_title, meta_keywords, meta_description, heading, alt_tag, image_path) => {
+//   const query = 'UPDATE home_banner SET meta_title = ?, meta_keywords = ?, meta_description = ?, heading = ?, alt_tag = ?, image_path = ? WHERE id = ?';
+//   return new Promise((resolve, reject) => {
+//     db.query(query, [meta_title, meta_keywords, meta_description, heading, alt_tag, image_path, id], (err, results) => {
+//       if (err) return reject(err);
+//       resolve(results);
+//     });
+//   });
+// };
+// Function to update an existing banner
+const updateHomeBanner = (id, bannerData, callback) => {
+  const query = `UPDATE home_banner SET 
+                  desktop_image_path = ?, 
+                  mobile_image_path = ?, 
+                  tablet_image_path = ?, 
+                  alt_tag_desktop = ?, 
+                  alt_tag_mobile = ?, 
+                  alt_tag_tablet = ? 
+                  WHERE id = ?`;
+  db.query(query, [bannerData.desktop_image_path, bannerData.mobile_image_path, bannerData.tablet_image_path, bannerData.alt_tag_desktop, bannerData.alt_tag_mobile, bannerData.alt_tag_tablet, id], callback);
 };
 
 module.exports = {
-  createImageEntry,
+  insertBanner,
   getAllHomeBanners,
   updateHomeBannerStatus,
   getHomeBannerByID,
   deleteHomeBannerFromDB,
   getImagePathByID,
-  updateHomeBannerEntry
+  updateHomeBanner
 };
 
 

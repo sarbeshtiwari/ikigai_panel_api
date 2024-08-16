@@ -2,6 +2,7 @@ const multer = require('multer');
 const path = require('path');
 const db = require('../model/bannerImages');
 
+
 // Configure storage for multer
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
@@ -88,6 +89,7 @@ const saveBanner = (req, res) => {
 };
 
 const getBannerById = (req, res) => {
+    
     const id = req.params.id;
     const query = 'SELECT * FROM banner_image WHERE pageType = ?';
     db.getBanner(query, [id], (err, results) => {
@@ -96,13 +98,41 @@ const getBannerById = (req, res) => {
             res.status(500).send('Error fetching banner');
             return;
         }
-        res.json(results[0]);
+        res.json(results);
     });
 };
+
+
+// Update our Banner status
+const UpdateBannerStatus = async (req, res) => {
+    const { id, status } = req.body;
+    if (id === undefined || status === undefined) return res.status(400).json({ success: false, message: 'Invalid request: id and status are required' });
+  
+    try {
+      const result = await db.updateBannerStatus(id, status);
+      res.status(200).json({ success: true, result });
+    } catch (error) {
+      res.status(500).json({ success: false, message: error.message });
+    }
+  };
+  
+  // Delete Banner us
+  const deleteBanner = async (req, res) => {
+    const id = parseInt(req.params.id, 10);
+    if (isNaN(id)) return res.status(400).json({ success: false, message: 'Invalid ID' });
+  
+    try {
+      
+      await db.deleteBannerFromDB(id);
+      res.status(200).json({ success: true, message: 'our Banner deleted successfully' });
+    } catch (error) {
+      res.status(500).json({ success: false, message: error.message });
+    }
+  };
 
 // Export the controller methods and middleware
 module.exports = {
     upload,
     saveBanner,
-    getBannerById
+    getBannerById, UpdateBannerStatus, deleteBanner
 };

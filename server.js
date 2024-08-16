@@ -1,126 +1,69 @@
 const express = require('express');
-const multer = require('multer');
-const path = require('path');
 const mysql = require('mysql2');
-const bodyParser = require('body-parser');
-const db = require('./config/db')
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 const cors = require('cors');
 
 const app = express();
-const port = 2000;
+app.use(express.json());
 app.use(cors());
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
-// Configure Multer for file uploads
 
-const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        let folder = '';
-        if (file.fieldname === 'desktop_image') {
-            folder = 'uploads/home_banner/desktop';
-        } else if (file.fieldname === 'mobile_image') {
-            folder = 'uploads/home_banner/mobile';
-        } else if (file.fieldname === 'tablet_image') {
-            folder = 'uploads/home_banner/tablet';
-        }
-        cb(null, folder);
-    },
-    filename: (req, file, cb) => {
-        // Use the same filename for all images
-        const filename = req.body.filename || Date.now() + path.extname(file.originalname);
-        cb(null, filename);
-    }
+const db = mysql.createConnection({
+  host: 'localhost',
+  user: 'root',
+  password: 'password',
+  database: 'your_database'
 });
 
-const upload = multer({ storage: storage });
+db.connect(err => {
+  if (err) throw err;
+  console.log('Database connected');
+});
 
-// Parse JSON bodies
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
+const SECRET_KEY = 'your_secret_key'; // Replace with a secure key
+const TOKEN_EXPIRY = '10m'; // Token expires in 10 minutes
 
+// Login API
+app.post('/login', (req, res) => {
+  const { email, password } = req.body;
 
+  db.query('SELECT * FROM users WHERE email = ?', [email], async (err, results) => {
+    if (err) return res.status(500).json({ error: 'Database query error' });
+    if (results.length === 0) return res.status(401).json({ error: 'Invalid credentials' });
 
-// API to save home banner
-app.post('/save-home-banner/:id?', upload.fields([
-    { name: 'desktop_image', maxCount: 1 },
-    { name: 'mobile_image', maxCount: 1 },
-    { name: 'tablet_image', maxCount: 1 }
-]), (req, res) => {
-    const id = req.params.id;
+    const user = results[0];
 
-    // Extract alt tags from request body
-    const alt_tags_desktop = req.body['alt_tag_desktop'] || [];
-    const alt_tags_mobile = req.body['alt_tag_mobile'] || [];
-    const alt_tags_tablet = req.body['alt_tag_tablet'] || [];
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) return res.status(401).json({ error: 'Invalid credentials' });
 
-    // Handle file paths
-    const desktopImagePaths = req.files['desktop_image'] || [];
-    const mobileImagePaths = req.files['mobile_image'] || [];
-    const tabletImagePaths = req.files['tablet_image'] || [];
+    const token = jwt.sign({ id: user.id }, SECRET_KEY, { expiresIn: TOKEN_EXPIRY });
+    res.json({ token });
+  });
+});
 
-    const banners = [];
-    for (let i = 0; i < desktopImagePaths.length; i++) {
-        banners.push({
-            desktop_image_path: desktopImagePaths[i] ? desktopImagePaths[i].filename : '',
-            mobile_image_path: mobileImagePaths[i] ? mobileImagePaths[i].filename : '',
-            tablet_image_path: tabletImagePaths[i] ? tabletImagePaths[i].filename : '',
-            alt_tag_desktop: alt_tags_desktop[i] || '',
-            alt_tag_mobile: alt_tags_mobile[i] || '',
-            alt_tag_tablet: alt_tags_tablet[i] || ''
-        });
-    }
+// Middleware to verify token
+const authenticateToken = (req, res, next) => {
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1];
+  if (token == null) return res.sendStatus(401);
 
-    if (id) {
-        // Update existing banners
-        banners.forEach((banner, index) => {
-            const query = `UPDATE home_banner SET 
-                desktop_image_path = ?, 
-                mobile_image_path = ?, 
-                tablet_image_path = ?, 
-                alt_tag_desktop = ?, 
-                alt_tag_mobile = ?, 
-                alt_tag_tablet = ? 
-                WHERE id = ?`;
-            db.query(query, [banner.desktop_image_path, banner.mobile_image_path, banner.tablet_image_path, banner.alt_tag_desktop, banner.alt_tag_mobile, banner.alt_tag_tablet, id], (err) => {
-                if (err) {
-                    console.error('Error updating banner:', err);
-                    res.status(500).send('Error updating banner');
-                    return;
-                }
-            });
-        });
-        res.send('Banners updated successfully');
-    } else {
-        // Insert new banners
-        banners.forEach((banner) => {
-            const query = `INSERT INTO home_banner (desktop_image_path, mobile_image_path, tablet_image_path, alt_tag_desktop, alt_tag_mobile, alt_tag_tablet) 
-                VALUES (?, ?, ?, ?, ?, ?)`;
-            db.query(query, [banner.desktop_image_path, banner.mobile_image_path, banner.tablet_image_path, banner.alt_tag_desktop, banner.alt_tag_mobile, banner.alt_tag_tablet], (err) => {
-                if (err) {
-                    console.error('Error inserting banner:', err);
-                    res.status(500).send('Error inserting banner');
-                    return;
-                }
-            });
-        });
-        res.send('Banners added successfully');
-    }
+  jwt.verify(token, SECRET_KEY, (err, user) => {
+    if (err) return res.sendStatus(403);
+    req.user = user;
+    next();
+  });
+};
+
+// Protected route example
+app.get('/protected', authenticateToken, (req, res) => {
+  res.json({ message: 'This is a protected route' });
+});
+
+app.listen(5000, () => {
+  console.log('Server running on port 5000');
 });
 
 
-// API to fetch banner by ID
-app.get('/fetch-home-banner/:id', (req, res) => {
-    const id = req.params.id;
-    const query = 'SELECT * FROM home_banner WHERE id = ?';
-    db.query(query, [id], (err, results) => {
-        if (err) {
-            console.error('Error fetching banner:', err);
-            res.status(500).send('Error fetching banner');
-            return;
-        }
-        res.json(results[0]);
-    });
-});
 
-app.listen(port, () => {
-    console.log(`Server running on http://localhost:${port}`);
-});
+
+// npm install express mysql2 bcryptjs jsonwebtoken cors

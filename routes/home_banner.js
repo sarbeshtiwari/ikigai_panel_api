@@ -2,15 +2,23 @@ const express = require('express');
 const router = express.Router();
 const {
   // createMetaInfo,
+  saveHomeBanner,
   getAllBanners,
   getBannerByID,
   updateBannerStatus,
   deleteBanner,
+  upload,
   // updateBanner
 } = require('../controllers/home_banner');
 
 // // Route to handle meta information and image upload
 // router.post('/upload', createMetaInfo);
+// Routes for home banner
+router.post('/upload/:id?', upload.fields([
+  { name: 'desktop_image', maxCount: 1 },
+  { name: 'mobile_image', maxCount: 1 },
+  { name: 'tablet_image', maxCount: 1 }
+]), saveHomeBanner);
 
 // Route to get all home banners
 router.get('/get', getAllBanners);
