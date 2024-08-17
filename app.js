@@ -21,6 +21,9 @@ const appointment = require('./routes/appointment');
 const authRoutes = require('./routes/authRoutes');
 const protectedRoutes = require('./routes/protectedRoutes');
 
+
+// const __filename = fileURLToPath(import.meta.url);
+// const __dirname = path.dirname(__filename);
 app.use(cors());
 // Middleware to parse JSON bodies
 app.use(express.json());

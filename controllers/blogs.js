@@ -1,6 +1,9 @@
 const path = require('path');
 const fs = require('fs');
 const multer = require('multer');
+const im = require('../config/im');
+const { CloudinaryStorage } = require('multer-storage-cloudinary');
+const cloudinary = require('../config/im');
 const { 
     addBlogs, 
     getAllBlogs, 
@@ -11,37 +14,115 @@ const {
     updateBlog 
 } = require('../model/blogs');
 
-//to handle file upload
-const upload = multer({
-    storage: multer.diskStorage({
-        destination: (req, file, cb) => cb(null, 'uploads/blogs'),
-        filename: (req, file, cb) => cb (null, Date.now() + path.extname(file.originalname))
-    })
-});
+// //to handle file upload
+// const upload = multer({
+//     storage: multer.diskStorage({
+//         destination: (req, file, cb) => cb(null, 'uploads/blogs'),
+//         filename: (req, file, cb) => cb (null, Date.now() + path.extname(file.originalname))
+//     })
+// });
 
-//add blog
+// //add blog
+// const createBlog = async (req, res) => {
+//     try {
+//         upload.single('image')(req, res, async (err) => {
+//             if (err) return res.status(400).send(err.message);
+
+//             const {
+//                 blogName, blogBy, blogDate, blogTags, blogLink, alt_tag, content, schema_data
+//             } = req.body;
+
+//             const image_path = req.file ? req.file.filename :null;
+
+//             try {
+//                 const result = await addBlogs ( blogName, blogBy, blogDate, blogTags, blogLink, alt_tag, content, schema_data, image_path);
+//                 res.status(201).json({success: true, result});
+//             } catch (dbError) {
+//                 res.status(500).json({success: false, message: dbError.message});
+//             }
+//         });
+//     } catch (error){
+//         res.status(500).json({success: false, message: error.message});
+//     }
+// };
+
+const storage = new CloudinaryStorage({
+    cloudinary: cloudinary,
+    params: {
+      folder: 'uploads/blogs',
+      allowed_formats: ['jpg', 'png', 'jpeg'],
+      public_id: (req, file) => file.originalname,
+    },
+  });
+  
+  // Configure multer
+  const upload = multer({ storage: storage });
+
+// Function to upload image to Cloudinary
+// const uploadToCloudinary = async (filePath) => {
+//     return new Promise((resolve, reject) => {
+//         im.uploader.upload(filePath, (error, result) => {
+//             if (error) {
+//                 reject(error);
+//             } else {
+//                 resolve(result);
+//             }
+//         });
+//     });
+// };
+
+// Add blog
 const createBlog = async (req, res) => {
     try {
-        upload.single('image')(req, res, async (err) => {
-            if (err) return res.status(400).send(err.message);
+        console.log('Request Body:', req.body);
+        console.log('Uploaded File Details:', req.file);
 
-            const {
-                blogName, blogBy, blogDate, blogTags, blogLink, alt_tag, content, schema_data
-            } = req.body;
+        if (!req.file) {
+            return res.status(400).json({ success: false, message: 'No file uploaded' });
+        }
 
-            const image_path = req.file ? req.file.filename :null;
+        const tempFilePath = req.file.path; // Path to the temporary file
 
-            try {
-                const result = await addBlogs ( blogName, blogBy, blogDate, blogTags, blogLink, alt_tag, content, schema_data, image_path);
-                res.status(201).json({success: true, result});
-            } catch (dbError) {
-                res.status(500).json({success: false, message: dbError.message});
-            }
-        });
-    } catch (error){
-        res.status(500).json({success: false, message: error.message});
+        // Upload image to Cloudinary
+        const cloudinaryResult = await uploadToCloudinary(tempFilePath);
+        const imageUrl = cloudinaryResult.secure_url;
+
+        // Extract blog data from request body
+        const {
+            blogName, blogBy, blogDate, blogTags, blogLink, alt_tag, content, schema_data
+        } = req.body;
+
+        // Save blog data to database
+        try {
+            const result = await addBlogs(blogName, blogBy, blogDate, blogTags, blogLink, alt_tag, content, schema_data, imageUrl);
+            res.status(201).json({ success: true, result });
+        } catch (dbError) {
+            console.error('Database Error:', dbError); // Log the database error
+            res.status(500).json({ success: false, message: 'Database Error: ' + dbError.message });
+        } finally {
+            // Clean up the temporary file
+            fs.unlink(tempFilePath, (err) => {
+                if (err) console.error('Failed to delete temporary file:', err);
+            });
+        }
+    } catch (error) {
+        console.error('Server Error:', error); // Log the server error
+        res.status(500).json({ success: false, message: 'Server Error: ' + error.message });
     }
 };
+
+
+
+//   app.post("/api/upload", upload.single("file"), async (req, res) => {
+//     try {
+//       const result = await cloudinary.uploader.upload(req.file.path);
+//       res.status(200).json({ url: result.secure_url, public_id: result.public_id });
+//     } catch (error) {
+//       console.error(error);
+//       res.status(500).json({ error: "Upload failed" });
+//     }
+//   });
+
 
 //get all blogs
 const getBlogs = async (req, res) => {
@@ -125,5 +206,5 @@ const updateBlogs = async (req, res) => {
 };
 
 module.exports = {
-    createBlog, getBlogs, getBlogById, updateBlogStatus, deleteBlog, updateBlogs
+    createBlog, getBlogs, getBlogById, updateBlogStatus, deleteBlog, updateBlogs, upload,
 }

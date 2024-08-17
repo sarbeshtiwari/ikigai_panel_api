@@ -6,7 +6,7 @@ const {
     getBlogById, 
     updateBlogStatus, 
     deleteBlog, 
-    updateBlogs
+    updateBlogs, upload
 } = require('../controllers/blogs');
 
 // Route to add information and image upload
