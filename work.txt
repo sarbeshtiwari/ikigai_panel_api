@@ -20,5 +20,4 @@ dashboard requirements:-
 
 banner_api not working
 
-data to long for home_image at services (not taking .svg) {update issue}
 

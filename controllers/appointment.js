@@ -6,6 +6,7 @@ const {
     deleteAppointmentFromDB,
     updateAppointment
 } = require('../model/appointment');
+const { sendAppointmentEmail } = require('../middleware/nodeMailer');
 
 
 // Create new Appointment entry
@@ -19,6 +20,9 @@ const createAppointment = async (req, res) => {
 
       try {
         const result = await addAppointment(name, phoneNumber, email);
+
+        await sendAppointmentEmail(name, phoneNumber, email);
+
         res.status(201).json({ success: true, result });
       } catch (dbError) {
         res.status(500).json({ success: false, message: dbError.message });

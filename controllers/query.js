@@ -6,6 +6,7 @@ const {
     deleteQueryFromDB,
     updateQuery
 } = require('../model/query');
+const { sendQueryEmail } = require('../middleware/nodeMailer');
 
 
 // Create new Query entry
@@ -19,6 +20,9 @@ const createQuery = async (req, res) => {
 
       try {
         const result = await addQuery(name, phoneNumber, email, user_message);
+
+        await sendQueryEmail(name, phoneNumber, email, user_message);
+
         res.status(201).json({ success: true, result });
       } catch (dbError) {
         res.status(500).json({ success: false, message: dbError.message });

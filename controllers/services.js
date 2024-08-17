@@ -187,9 +187,11 @@ const updateServices = async (req, res) => {
           id,
          
           heading,
-          description,home_data,
+          home_image_path,
+          home_data,
           image_path,
-          home_image_path
+          description
+          
         );
   
         // Delete old image files if they exist and are different from new ones
