@@ -68,12 +68,12 @@ const deleteHomeBannerFromDB = (id) => {
 
 // Get image path by ID
 const getImagePathByID = (id) => {
-  const query = 'SELECT image_path FROM home_banner WHERE id = ?';
+  const query = 'SELECT desktop_image_path, mobile_image_path, tablet_image_path FROM home_banner WHERE id = ?';
   return new Promise((resolve, reject) => {
     db.query(query, [id], (err, results) => {
       if (err) return reject(err);
       if (results.length === 0) return reject(new Error('Home banner not found'));
-      resolve(results[0].image_path);
+      resolve(results[0].desktop_image_path, results[0].mobile_image_path, results[0].tablet_image_path);
     });
   });
 };
