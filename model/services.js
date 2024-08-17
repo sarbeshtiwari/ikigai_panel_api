@@ -53,24 +53,65 @@ const updateOurServicesStatus = (id, status) => {
 const updateOurServicesOnHomeStatus = async (id, on_home) => {
     try {
         if (on_home) {
-            // Set all records' on_home to false
+           // Step 1a: Check the `status` status of the specific record
+        const checkQueryStatus = 'SELECT status FROM our_services WHERE id = ?';
+        const checkResultStatus = await new Promise((resolve, reject) => {
+            db.query(checkQueryStatus, [id], (err, results) => {
+                if (err) return reject(err);
+                resolve(results);
+            });
+        });
+
+        // Step 1b: Update `status` to `true` if it is `false`
+        if (checkResultStatus.length > 0 && !checkResultStatus[0].status) {
+            const updateOnTopQueryStatus = 'UPDATE our_services SET status = true WHERE id = ?';
             await new Promise((resolve, reject) => {
-                const query = 'UPDATE our_services SET on_home = false WHERE on_home = true';
-                db.query(query, (err, results) => {
+                db.query(updateOnTopQueryStatus, [id], (err, results) => {
                     if (err) return reject(err);
                     resolve(results);
                 });
             });
         }
 
-        // Update the specific record
-        const query = 'UPDATE our_services SET on_home = ? WHERE id = ?';
-        return new Promise((resolve, reject) => {
-            db.query(query, [on_home, id], (err, results) => {
-                if (err) return reject(err);
-                resolve(results);
-            });
-        });
+
+          // Step 1a: Check the `on_top` status of the specific record
+          const checkQuery = 'SELECT on_top FROM our_services WHERE id = ?';
+          const checkResult = await new Promise((resolve, reject) => {
+              db.query(checkQuery, [id], (err, results) => {
+                  if (err) return reject(err);
+                  resolve(results);
+              });
+          });
+
+          // Step 1b: Update `on_top` to `false` if it is `true`
+          if (checkResult.length > 0 && checkResult[0].on_top) {
+              const updateOnTopQuery = 'UPDATE our_services SET on_top = false WHERE id = ?';
+              await new Promise((resolve, reject) => {
+                  db.query(updateOnTopQuery, [id], (err, results) => {
+                      if (err) return reject(err);
+                      resolve(results);
+                  });
+              });
+          }
+
+          // Step 1c: Set all records' `on_home` to `false`
+          const updateAllOnHomeQuery = 'UPDATE our_services SET on_home = false WHERE on_home = true';
+          await new Promise((resolve, reject) => {
+              db.query(updateAllOnHomeQuery, (err, results) => {
+                  if (err) return reject(err);
+                  resolve(results);
+              });
+          });
+      }
+
+      // Step 2: Update the specific record's `on_home` status
+      const updateSpecificQuery = 'UPDATE our_services SET on_home = ? WHERE id = ?';
+      return new Promise((resolve, reject) => {
+          db.query(updateSpecificQuery, [on_home, id], (err, results) => {
+              if (err) return reject(err);
+              resolve(results);
+          });
+      });
 
     } catch (err) {
         // Handle errors if necessary
@@ -85,24 +126,65 @@ const updateOurServicesOnTopStatus = async (id, on_top) => {
 
     try {
         if (on_top) {
-            // Set all records' on_top to false
+             // Step 1a: Check the `status` status of the specific record
+        const checkQueryStatus = 'SELECT status FROM our_services WHERE id = ?';
+        const checkResultStatus = await new Promise((resolve, reject) => {
+            db.query(checkQueryStatus, [id], (err, results) => {
+                if (err) return reject(err);
+                resolve(results);
+            });
+        });
+
+        // Step 1b: Update `status` to `true` if it is `false`
+        if (checkResultStatus.length > 0 && !checkResultStatus[0].status) {
+            const updateOnTopQueryStatus = 'UPDATE our_services SET status = true WHERE id = ?';
             await new Promise((resolve, reject) => {
-                const query = 'UPDATE our_services SET on_top = false WHERE on_top = true';
-                db.query(query, (err, results) => {
+                db.query(updateOnTopQueryStatus, [id], (err, results) => {
                     if (err) return reject(err);
                     resolve(results);
                 });
             });
         }
 
-        // Update the specific record
-        const query = 'UPDATE our_services SET on_top = ? WHERE id = ?';
-        return new Promise((resolve, reject) => {
-            db.query(query, [on_top, id], (err, results) => {
+
+          // Step 1a: Check the `on_home` status of the specific record
+          const checkQuery = 'SELECT on_home FROM our_services WHERE id = ?';
+          const checkResult = await new Promise((resolve, reject) => {
+              db.query(checkQuery, [id], (err, results) => {
+                  if (err) return reject(err);
+                  resolve(results);
+              });
+          });
+
+          // Step 1b: Update `on_home` to `false` if it is `true`
+          if (checkResult.length > 0 && checkResult[0].on_home) {
+            const updateOnTopQuery = 'UPDATE our_services SET on_home = false WHERE id = ?';
+            await new Promise((resolve, reject) => {
+                db.query(updateOnTopQuery, [id], (err, results) => {
+                    if (err) return reject(err);
+                    resolve(results);
+                });
+            });
+        }
+
+        // Step 1c: Set all records' `on_top` to `false`
+        const updateAllOnHomeQuery = 'UPDATE our_services SET on_top = false WHERE on_top = true';
+        await new Promise((resolve, reject) => {
+            db.query(updateAllOnHomeQuery, (err, results) => {
                 if (err) return reject(err);
                 resolve(results);
             });
         });
+    }
+
+    // Step 2: Update the specific record's `on_top` status
+    const updateSpecificQuery = 'UPDATE our_services SET on_top = ? WHERE id = ?';
+    return new Promise((resolve, reject) => {
+        db.query(updateSpecificQuery, [on_top, id], (err, results) => {
+            if (err) return reject(err);
+            resolve(results);
+        });
+    });
 
     } catch (err) {
         // Handle errors if necessary
