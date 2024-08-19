@@ -21,3 +21,5 @@ dashboard requirements:-
 banner_api not working
 
 
+testimonial video is not uploading
+services svg images are not uploading

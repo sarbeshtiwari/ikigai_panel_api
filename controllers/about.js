@@ -1,5 +1,7 @@
 const path = require('path');
 const fs = require('fs');
+const { CloudinaryStorage } = require('multer-storage-cloudinary');
+const cloudinary = require('../config/im');
 const {
   addAbout,
   getAllAboutUs,
@@ -14,19 +16,55 @@ const {
 
 // Middleware for handling file upload (using multer)
 const multer = require('multer');
-const upload = multer({
-  storage: multer.diskStorage({
-    destination: (req, file, cb) => cb(null, 'uploads/about_us/'),
-    filename: (req, file, cb) => cb(null, Date.now() + path.extname(file.originalname))
-  })
-});
+// const upload = multer({
+//   storage: multer.diskStorage({
+//     destination: (req, file, cb) => cb(null, 'uploads/about_us/'),
+//     filename: (req, file, cb) => cb(null, Date.now() + path.extname(file.originalname))
+//   })
+// });
 
 // Create new about us entry
+
+const storage = new CloudinaryStorage({
+  cloudinary: cloudinary,
+  params: {
+      folder: 'uploads/about_us',
+      allowed_formats: ['jpg', 'png', 'jpeg'],
+      public_id: (req, file) => file.originalname,
+  },
+});
+
+const upload = multer({ storage: storage });
+
+const uploadToCloudinary = async (filePath) => {
+  try {
+      const result = await cloudinary.uploader.upload(filePath);
+      return result;
+  } catch (error) {
+      console.error('Cloudinary Upload Error:', error);
+      throw error;
+  }
+};
+
+const deleteFromCloudinary = async (publicId) => {
+try {
+  await cloudinary.uploader.destroy(publicId);
+} catch (error) {
+  console.error('Cloudinary Delete Error:', error);
+  throw error;
+}
+};
+
 const createAboutUs = async (req, res) => {
   try {
     
     upload.single('image')(req, res, async (err) => {
       if (err) return res.status(400).send(err.message);
+      const tempFilePath = req.file ? req.file.path : null; // Updated to use path
+
+      if (!tempFilePath) {
+        return res.status(400).json({ success: false, message: 'No file uploaded' });
+      }
 
       
       const {
@@ -35,13 +73,17 @@ const createAboutUs = async (req, res) => {
         description
       } = req.body;
 
-      const image_path = req.file ? req.file.filename : null;
-
+      const cloudinaryResult = await uploadToCloudinary(tempFilePath);
+      const image_path = cloudinaryResult.secure_url;
       try {
         const result = await addAbout(heading, description, image_path);
         res.status(201).json({ success: true, result });
       } catch (dbError) {
         res.status(500).json({ success: false, message: dbError.message });
+      } finally {
+        fs.unlink(tempFilePath, (err) => {
+          if (err) console.error('Failed to delete temporary file:', err);
+        });
       }
     });
   } catch (error) {
@@ -118,7 +160,7 @@ const deleteAboutUs = async (req, res) => {
 
   try {
     const imagePath = await getImagePathByID(id);
-    if (imagePath) fs.unlinkSync(path.join(__dirname, '..', 'uploads', 'about_us', imagePath));
+    if (imagePath) await deleteFromCloudinary(imagePath);
     
     await deleteAboutUsFromDB(id);
     res.status(200).json({ success: true, message: 'about us deleted successfully' });
@@ -140,15 +182,31 @@ const updateAbout = async (req, res) => {
       heading,
       description
     } = req.body;
-    const image_path = req.file ? req.file.filename : null;
+    const newImageFile = req.file;
+    const newImagePath = newImageFile ? newImageFile.path : null;
+    let newImagePublicId = newImageFile ? newImageFile.filename : null;
 
     try {
-      const oldImagePath = await getImagePathByID(id);
+      const oldImagePath = await getImagePathById(id);
+      let cloudinaryResult;
+
+      // Upload new image to Cloudinary if provided
+      if (newImagePath) {
+        cloudinaryResult = await uploadToCloudinary(newImagePath);
+        newImagePublicId = cloudinaryResult.secure_url;
+
+        // Remove old image from Cloudinary if it exists and is different
+        if (oldImagePath && oldImagePath !== newImagePublicId) {
+          await deleteFromCloudinary(oldImagePath);
+        }
+      }
 
       const result = await updateAboutUs(id, heading, description, image_path);
 
-      if (oldImagePath && image_path && oldImagePath !== image_path) {
-        fs.unlinkSync(path.join('uploads/about_us/', oldImagePath));
+      if (newImagePath) {
+        fs.unlink(newImagePath, (err) => {
+          if (err) console.error('Failed to delete temporary file:', err);
+        });
       }
 
       res.json({ message: 'Data updated successfully', affectedRows: result.affectedRows });

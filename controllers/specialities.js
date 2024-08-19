@@ -1,5 +1,7 @@
 const path = require('path');
 const fs = require('fs');
+const { CloudinaryStorage } = require('multer-storage-cloudinary');
+const cloudinary = require('../config/im');
 const {
     addSpeciality,
     getAllOurSpeciality,
@@ -12,12 +14,44 @@ const {
 
 // Middleware for handling file upload (using multer)
 const multer = require('multer');
-const upload = multer({
-  storage: multer.diskStorage({
-    destination: (req, file, cb) => cb(null, 'uploads/our_specialities/'),
-    filename: (req, file, cb) => cb(null, Date.now() + path.extname(file.originalname))
-  })
+// const upload = multer({
+//   storage: multer.diskStorage({
+//     destination: (req, file, cb) => cb(null, 'uploads/our_specialities/'),
+//     filename: (req, file, cb) => cb(null, Date.now() + path.extname(file.originalname))
+//   })
+// });
+
+const storage = new CloudinaryStorage({
+  cloudinary: cloudinary,
+  params: {
+      folder: 'uploads/our_specialities',
+      allowed_formats: ['jpg', 'png', 'jpeg'],
+      public_id: (req, file) => file.originalname,
+  },
 });
+
+const upload = multer({ storage: storage });
+
+  
+
+  const uploadToCloudinary = async (filePath) => {
+    try {
+        const result = await cloudinary.uploader.upload(filePath);
+        return result;
+    } catch (error) {
+        console.error('Cloudinary Upload Error:', error);
+        throw error;
+    }
+};
+
+const deleteFromCloudinary = async (publicId) => {
+  try {
+    await cloudinary.uploader.destroy(publicId);
+  } catch (error) {
+    console.error('Cloudinary Delete Error:', error);
+    throw error;
+  }
+};
 
 // Create new our Speciality entry
 const createOurSpeciality = async (req, res) => {
@@ -26,18 +60,27 @@ const createOurSpeciality = async (req, res) => {
     upload.single('image')(req, res, async (err) => {
       if (err) return res.status(400).send(err.message);
 
-      
+      const tempFilePath = req.file ? req.file.path : null; // Updated to use path
+
+      if (!tempFilePath) {
+        return res.status(400).json({ success: false, message: 'No file uploaded' });
+      }
       const {
         heading, content, schema_data
       } = req.body;
 
-      const image_path = req.file ? req.file.filename : null;
+      const cloudinaryResult = await uploadToCloudinary(tempFilePath);
+      const image_path = cloudinaryResult.secure_url;
 
       try {
         const result = await addSpeciality(heading, content, schema_data, image_path);
         res.status(201).json({ success: true, result });
       } catch (dbError) {
         res.status(500).json({ success: false, message: dbError.message });
+      } finally {
+        fs.unlink(tempFilePath, (err) => {
+          if (err) console.error('Failed to delete temporary file:', err);
+        });
       }
     });
   } catch (error) {
@@ -87,8 +130,8 @@ const deleteOurSpeciality = async (req, res) => {
   if (isNaN(id)) return res.status(400).json({ success: false, message: 'Invalid ID' });
 
   try {
-    const imagePath = await getImagePathByID(id);
-    if (imagePath) fs.unlinkSync(path.join(__dirname, '..', 'uploads', 'our_specialities', imagePath));
+    const imagePath = await getImagePathById(id);
+      if (imagePath) await deleteFromCloudinary(imagePath);
     
     await deleteOurSpecialityFromDB(id);
     res.status(200).json({ success: true, message: 'our Speciality deleted successfully' });
@@ -108,15 +151,31 @@ const updateSpeciality = async (req, res) => {
     const {
         heading, content, schema_data
     } = req.body;
-    const image_path = req.file ? req.file.filename : null;
+    const newImageFile = req.file;
+    const newImagePath = newImageFile ? newImageFile.path : null;
+    let newImagePublicId = newImageFile ? newImageFile.filename : null;
 
     try {
-      const oldImagePath = await getImagePathByID(id);
+      const oldImagePath = await getImagePathById(id);
+      let cloudinaryResult;
+
+      // Upload new image to Cloudinary if provided
+      if (newImagePath) {
+        cloudinaryResult = await uploadToCloudinary(newImagePath);
+        newImagePublicId = cloudinaryResult.secure_url;
+
+        // Remove old image from Cloudinary if it exists and is different
+        if (oldImagePath && oldImagePath !== newImagePublicId) {
+          await deleteFromCloudinary(oldImagePath);
+        }
+      }
 
       const result = await updateOurSpeciality(id, heading, content, schema_data, image_path);
 
-      if (oldImagePath && image_path && oldImagePath !== image_path) {
-        fs.unlinkSync(path.join('uploads/our_specialities/', oldImagePath));
+      if (newImagePath) {
+        fs.unlink(newImagePath, (err) => {
+          if (err) console.error('Failed to delete temporary file:', err);
+        });
       }
 
       res.json({ message: 'Data updated successfully', affectedRows: result.affectedRows });

@@ -11,25 +11,58 @@ const {
   updateHomeBanner
 } = require('../model/home_banner');
 
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-      let folder = '';
-      if (file.fieldname === 'desktop_image') {
-          folder = 'uploads/home_banner/desktop';
-      } else if (file.fieldname === 'mobile_image') {
-          folder = 'uploads/home_banner/mobile';
-      } else if (file.fieldname === 'tablet_image') {
-          folder = 'uploads/home_banner/tablet';
-      }
-      cb(null, folder);
-  },
-  filename: (req, file, cb) => {
-      const filename = req.body.filename || Date.now() + path.extname(file.originalname);
-      cb(null, filename);
-  }
+
+const { CloudinaryStorage } = require('multer-storage-cloudinary');
+const cloudinary = require('../config/im');
+
+const storage = new CloudinaryStorage({
+    cloudinary: cloudinary,
+    params: {
+      // Determine the folder based on the field name
+    //   let folder;
+    //   switch (file.fieldname) {
+    //     case 'desktop_image':
+    //       folder = 'uploads/banner_image/desktop';
+    //       break;
+    //     case 'mobile_image':
+    //       folder = 'uploads/banner_image/mobile';
+    //       break;
+    //     case 'tablet_image':
+    //       folder = 'uploads/banner_image/tablet';
+    //       break;
+    //     default:
+    //       folder = 'uploads/banner_image';
+    //   }
+  
+    //   return {
+        folder: 'uploads/home_banner',
+        allowed_formats: ['jpg', 'png', 'jpeg', 'webp'],
+        public_id: (req, file) => file.originalname,
+    //   };
+    },
 });
 
 const upload = multer({ storage: storage });
+
+// const storage = multer.diskStorage({
+//   destination: (req, file, cb) => {
+//       let folder = '';
+//       if (file.fieldname === 'desktop_image') {
+//           folder = 'uploads/home_banner/desktop';
+//       } else if (file.fieldname === 'mobile_image') {
+//           folder = 'uploads/home_banner/mobile';
+//       } else if (file.fieldname === 'tablet_image') {
+//           folder = 'uploads/home_banner/tablet';
+//       }
+//       cb(null, folder);
+//   },
+//   filename: (req, file, cb) => {
+//       const filename = req.body.filename || Date.now() + path.extname(file.originalname);
+//       cb(null, filename);
+//   }
+// });
+
+// const upload = multer({ storage: storage });
 
 const saveHomeBanner = (req, res) => {
   const id = req.params.id;

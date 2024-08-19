@@ -4,11 +4,9 @@ const db = require('../config/db');
 
 
 const createTestimonial = (data, callback) => {
-    const query = `
-        INSERT INTO testimonials (image_path, alt_tag, video_path, videoURL, status)
-        VALUES (?, ?, ?, ?, ?)
-    `;
-    const values = [data.image_path, data.alt_tag, data.video_path, data.videoURL, false];
+    const query = `INSERT INTO testimonials (image_path, alt_tag, video_path, videoURL)
+        VALUES (?, ?, ?, ?)`;
+    const values = [data.image_path, data.alt_tag, data.video_path, data.videoURL];
     db.query(query, values, callback);
 };
 

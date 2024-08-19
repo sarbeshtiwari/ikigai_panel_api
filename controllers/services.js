@@ -1,6 +1,9 @@
 const path = require('path');
 const fs = require('fs');
 const multer = require('multer');
+
+const { CloudinaryStorage } = require('multer-storage-cloudinary');
+const cloudinary = require('../config/im');
 const {
     addServices,
     getAllOurServices,
@@ -15,52 +18,66 @@ const {
 
 // Middleware for handling file upload (using multer)
 
-const upload = multer({
-    storage: multer.diskStorage({
-      destination: (req, file, cb) => cb(null, 'uploads/our_services/'),
-      filename: (req, file, cb) => cb(null, Date.now() + path.extname(file.originalname))
-    }),
-    limits: { fileSize: 5 * 1024 * 1024 } // Limit file size to 5MB
-  }).fields([
-    { name: 'image_path', maxCount: 1 },
-    { name: 'home_image_path', maxCount: 1 }
-  ]);
+// const upload = multer({
+//     storage: multer.diskStorage({
+//       destination: (req, file, cb) => cb(null, 'uploads/our_services/'),
+//       filename: (req, file, cb) => cb(null, Date.now() + path.extname(file.originalname))
+//     }),
+//     limits: { fileSize: 5 * 1024 * 1024 } // Limit file size to 5MB
+//   }).fields([
+//     { name: 'image_path', maxCount: 1 },
+//     { name: 'home_image_path', maxCount: 1 }
+//   ]);
+const storage = new CloudinaryStorage({
+  cloudinary: cloudinary,
+  params: {
+    folder: 'uploads/our_services',
+    allowed_formats: ['jpg', 'png', 'jpeg', 'svg', 'webp'], // Correct format
+    public_id: (req, file) => file.originalname, // Unique filename
+  },
+});
 
+const upload = multer({ storage: storage });
 // Create new Our Services entry
 const createOurServices = async (req, res) => {
-    upload(req, res, async (err) => {
-      if (err) return res.status(400).send(err.message);
-  
-      // Extract file paths
-      const image_path = req.files['image_path'] ? req.files['image_path'][0].filename : null;
-      const home_image_path = req.files['home_image_path'] ? req.files['home_image_path'][0].filename : null;
-  
-      // Extract other fields from the request body
-      const {
-       
+  upload.fields([
+    { name: 'image_path', maxCount: 1 },
+    { name: 'home_image_path', maxCount: 1 }
+  ])(req, res, async (err) => {
+    if (err) {
+      console.error('Upload Error:', err);
+      return res.status(400).send(err.message);
+    }
+
+    // Extract Cloudinary URLs or public IDs from the request
+    const image_path = req.files['image_path'] ? req.files['image_path'][0].path : null;
+    const home_image_path = req.files['home_image_path'] ? req.files['home_image_path'][0].path : null;
+
+    // Extract other fields from the request body
+    const {
+      heading,
+      home_data,
+      description,
+    } = req.body;
+
+    try {
+      // Call your function to add the entry to the database
+      const result = await addServices(
         heading,
+        home_image_path,
         home_data,
-        description,
-      } = req.body;
-  
-      try {
-        // Call your function to add the entry to the database
-        const result = await addServices(
-        
-          heading,
-          home_image_path,
-          home_data,
-          image_path,
-          description     
-          
-        );
-  
-        res.status(201).json({ success: true, result });
-      } catch (dbError) {
-        res.status(500).json({ success: false, message: dbError.message });
-      }
-    });
-  };
+        image_path,
+        description     
+      );
+
+      res.status(201).json({ success: true, result });
+    } catch (dbError) {
+      console.error('Database Error:', dbError);
+      res.status(500).json({ success: false, message: dbError.message });
+    }
+  });
+};
+
   
 
 // Get all Our Services

@@ -1,21 +1,94 @@
 const testimonialModel = require('../model/testimonials');
+const { CloudinaryStorage } = require('multer-storage-cloudinary');
+const cloudinary = require('../config/im');
+const multer = require('multer');
+const fs = require('fs');
+const path = require('path');
+
+const storage = new CloudinaryStorage({
+    cloudinary: cloudinary,
+    params: {
+        folder: 'uploads/testimonials',
+        allowed_formats: ['jpg', 'png', 'jpeg', 'mp4'], // Add other formats if needed
+        public_id: (req, file) => file.originalname,
+    },
+});
+
+const upload = multer({ storage: storage });
+  
+    
+  
+ 
+
+const uploadToCloudinary = async (image_filePath, video_filePath) => {
+    try {
+        const uploadPromises = [];
+
+        if (image_filePath) {
+            uploadPromises.push(cloudinary.uploader.upload(image_filePath, { resource_type: 'image' }));
+        }
+        
+        if (video_filePath) {
+            uploadPromises.push(cloudinary.uploader.upload(video_filePath, { resource_type: 'video' }));
+        }
+
+        const [imageResult, videoResult] = await Promise.all(uploadPromises);
+
+        return {
+            image_url: imageResult ? imageResult.secure_url : null,
+            video_url: videoResult ? videoResult.secure_url : null
+        };
+    } catch (error) {
+        console.error('Cloudinary Upload Error:', error);
+        throw error;
+    }
+};
+
+
+const deleteFromCloudinary = async (publicId) => {
+  try {
+    await cloudinary.uploader.destroy(publicId);
+  } catch (error) {
+    console.error('Cloudinary Delete Error:', error);
+    throw error;
+  }
+};
 
 // Create a new testimonial
-const createTestimonial = (req, res) => {
+const createTestimonial = async (req, res) => {
+    console.log('Files:', req.files);
+    console.log('Body:', req.body);
+
     const { alt_tag, videoURL } = req.body;
-    const image_path = req.files['image'] ? req.files['image'][0].filename : null;
-    const video_path = req.files['video'] ? req.files['video'][0].filename : null;
 
-    const testimonialData = { image_path, alt_tag, video_path, videoURL };
+    if (!req.files) {
+        return res.status(400).json({ success: false, message: 'No files were uploaded.' });
+    }
 
-    testimonialModel.createTestimonial(testimonialData, (err, results) => {
-        if (err) {
-            console.error('Error creating testimonial:', err);
-            return res.status(500).json({ success: false, message: 'Failed to create testimonial.' });
-        }
+    const imageFile = req.files['image'] ? req.files['image'][0] : null;
+    const videoFile = req.files['video'] ? req.files['video'][0] : null;
+
+    try {
+        const testimonialData = {
+            image_path: imageFile ? imageFile.path : null,
+            alt_tag,
+            video_path: videoFile ? videoFile.path : null,
+            videoURL
+        };
+
+        await testimonialModel.createTestimonial(testimonialData);
+
         res.status(201).json({ success: true, message: 'Testimonial created successfully.' });
-    });
+    } catch (error) {
+        console.error('Server Error:', error); // Log entire error object
+        console.error('Error Message:', error.message); // Log error message
+        console.error('Error Stack:', error.stack); // Log stack trace for debugging
+        res.status(500).json({ success: false, message: 'Server Error: ' + error.message });
+    }
 };
+
+
+
 
 // Update an existing testimonial
 const updateTestimonial = (req, res) => {
