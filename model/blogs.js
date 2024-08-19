@@ -1,25 +1,10 @@
 const db = require('../config/db');
 
 //add blogs
-// const addBlogs = ( blogName, blogBy, blogDate, blogTags, blogLink, alt_tag, content, schema_data, image_path) => {
-//     const query = 'INSERT INTO blogs ( blogName, blogBy, blogDate, blogTags, blogLink, alt_tag, content, schema_data, image_path) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)';
-//     return new Promise((resolve, reject) => {
-//         db.query(query, [ blogName, blogBy, blogDate, blogTags, blogLink, alt_tag, content, schema_data, image_path], (err, results) => {
-//             if (err) {
-//                 reject(err);
-//             } else {
-//                 resolve(results.insertId);
-//             }
-//         });
-//     });
-// };
-
-//get blogs
-
-const addBlogs = (blogName, blogBy, blogDate, blogTags, blogLink, alt_tag, content, schema_data, imageUrl) => {
-    const query = 'INSERT INTO blogs (blogName, blogBy, blogDate, blogTags, blogLink, alt_tag, content, schema_data, image_path) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)';
+const addBlogs = ( blogName, blogBy, blogDate, blogTags, blogLink, alt_tag, content, schema_data, image_path) => {
+    const query = 'INSERT INTO blogs ( blogName, blogBy, blogDate, blogTags, blogLink, alt_tag, content, schema_data, image_path) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)';
     return new Promise((resolve, reject) => {
-        db.query(query, [blogName, blogBy, blogDate, blogTags, blogLink, alt_tag, content, schema_data, imageUrl], (err, results) => {
+        db.query(query, [ blogName, blogBy, blogDate, blogTags, blogLink, alt_tag, content, schema_data, image_path], (err, results) => {
             if (err) {
                 reject(err);
             } else {
@@ -28,6 +13,21 @@ const addBlogs = (blogName, blogBy, blogDate, blogTags, blogLink, alt_tag, conte
         });
     });
 };
+
+//get blogs
+
+// const addBlogs = (blogName, blogBy, blogDate, blogTags, blogLink, alt_tag, content, schema_data, imageUrl) => {
+//     const query = 'INSERT INTO blogs (blogName, blogBy, blogDate, blogTags, blogLink, alt_tag, content, schema_data, image_path) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)';
+//     return new Promise((resolve, reject) => {
+//         db.query(query, [blogName, blogBy, blogDate, blogTags, blogLink, alt_tag, content, schema_data, imageUrl], (err, results) => {
+//             if (err) {
+//                 reject(err);
+//             } else {
+//                 resolve(results.insertId);
+//             }
+//         });
+//     });
+// };
 const getAllBlogs = () => {
     const query = 'SELECT * FROM blogs';
     return new Promise((resolve, reject) => {

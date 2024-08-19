@@ -47,69 +47,69 @@ const {
 // };
 
 const storage = new CloudinaryStorage({
-    cloudinary: cloudinary,
-    params: {
+  cloudinary: cloudinary,
+  params: {
       folder: 'uploads/blogs',
       allowed_formats: ['jpg', 'png', 'jpeg'],
       public_id: (req, file) => file.originalname,
-    },
-  });
-  
-  // Configure multer
-  const upload = multer({ storage: storage });
+  },
+});
 
-// Function to upload image to Cloudinary
-// const uploadToCloudinary = async (filePath) => {
-//     return new Promise((resolve, reject) => {
-//         im.uploader.upload(filePath, (error, result) => {
-//             if (error) {
-//                 reject(error);
-//             } else {
-//                 resolve(result);
-//             }
-//         });
-//     });
+const upload = multer({ storage: storage });
+
+  
+
+//   const uploadToCloudinary = async (filePath) => {
+//     try {
+//         const result = await cloudinary.uploader.upload(filePath);
+//         return result;
+//     } catch (error) {
+//         console.error('Cloudinary Upload Error:', error);
+//         throw error;
+//     }
 // };
 
+
+
 // Add blog
+// controllers/blogs.js
 const createBlog = async (req, res) => {
-    try {
-        console.log('Request Body:', req.body);
-        console.log('Uploaded File Details:', req.file);
+  try {
+      // if (!req.file) {
+      //     return res.status(400).json({ success: false, message: 'No file uploaded' });
+      // }
+      upload.single('image')(req, res, async (err) => {
+        if (err) return res.status(400).send(err.message);
 
-        if (!req.file) {
-            return res.status(400).json({ success: false, message: 'No file uploaded' });
-        }
+      const image_path = req.file ? req.file.filename : null;
 
-        const tempFilePath = req.file.path; // Path to the temporary file
+      // Check if `uploadToCloudinary` is correctly defined
+      // const cloudinaryResult = await uploadToCloudinary(tempFilePath);
+      // const image_path = cloudinaryResult.secure_url;
 
-        // Upload image to Cloudinary
-        const cloudinaryResult = await uploadToCloudinary(tempFilePath);
-        const imageUrl = cloudinaryResult.secure_url;
+      const {
+          blogName, blogBy, blogDate, blogTags, blogLink, alt_tag, content, schema_data
+      } = req.body;
 
-        // Extract blog data from request body
-        const {
-            blogName, blogBy, blogDate, blogTags, blogLink, alt_tag, content, schema_data
-        } = req.body;
-
-        // Save blog data to database
-        try {
-            const result = await addBlogs(blogName, blogBy, blogDate, blogTags, blogLink, alt_tag, content, schema_data, imageUrl);
-            res.status(201).json({ success: true, result });
-        } catch (dbError) {
-            console.error('Database Error:', dbError); // Log the database error
-            res.status(500).json({ success: false, message: 'Database Error: ' + dbError.message });
-        } finally {
-            // Clean up the temporary file
-            fs.unlink(tempFilePath, (err) => {
-                if (err) console.error('Failed to delete temporary file:', err);
-            });
-        }
-    } catch (error) {
-        console.error('Server Error:', error); // Log the server error
-        res.status(500).json({ success: false, message: 'Server Error: ' + error.message });
-    }
+      try {
+          const result = await addBlogs(blogName, blogBy, blogDate, blogTags, blogLink, alt_tag, content, schema_data, image_path);
+          res.status(201).json({ success: true, result });
+      } catch (dbError) {
+          console.error('Database Error:', dbError); // More detailed logging
+          res.status(500).json({ success: false, message: 'Database Error: ' + dbError.message });
+      } finally {
+          fs.unlink(tempFilePath, (err) => {
+              if (err) console.error('Failed to delete temporary file:', err);
+          });
+      }});
+  } catch (error) {
+      console.error('Server Error:', error); // More detailed logging
+      res.status(500).json({ success: false, message: 'Server Error: ' + error.message });
+  }
 };
+
+
+
 
 
 
