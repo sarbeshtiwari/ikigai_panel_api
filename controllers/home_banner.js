@@ -1,6 +1,6 @@
 const path = require('path');
 const fs = require('fs');
-const multer = require('multer');
+const cloudinary = require('../config/im');
 const {
   insertBanner,
   getAllHomeBanners,
@@ -11,58 +11,14 @@ const {
   updateHomeBanner
 } = require('../model/home_banner');
 
-
-const { CloudinaryStorage } = require('multer-storage-cloudinary');
-const cloudinary = require('../config/im');
-
-const storage = new CloudinaryStorage({
-    cloudinary: cloudinary,
-    params: {
-      // Determine the folder based on the field name
-    //   let folder;
-    //   switch (file.fieldname) {
-    //     case 'desktop_image':
-    //       folder = 'uploads/banner_image/desktop';
-    //       break;
-    //     case 'mobile_image':
-    //       folder = 'uploads/banner_image/mobile';
-    //       break;
-    //     case 'tablet_image':
-    //       folder = 'uploads/banner_image/tablet';
-    //       break;
-    //     default:
-    //       folder = 'uploads/banner_image';
-    //   }
-  
-    //   return {
-        folder: 'uploads/home_banner',
-        allowed_formats: ['jpg', 'png', 'jpeg', 'webp'],
-        public_id: (req, file) => file.originalname,
-    //   };
-    },
-});
-
-const upload = multer({ storage: storage });
-
-// const storage = multer.diskStorage({
-//   destination: (req, file, cb) => {
-//       let folder = '';
-//       if (file.fieldname === 'desktop_image') {
-//           folder = 'uploads/home_banner/desktop';
-//       } else if (file.fieldname === 'mobile_image') {
-//           folder = 'uploads/home_banner/mobile';
-//       } else if (file.fieldname === 'tablet_image') {
-//           folder = 'uploads/home_banner/tablet';
-//       }
-//       cb(null, folder);
-//   },
-//   filename: (req, file, cb) => {
-//       const filename = req.body.filename || Date.now() + path.extname(file.originalname);
-//       cb(null, filename);
-//   }
-// });
-
-// const upload = multer({ storage: storage });
+const deleteFromCloudinary = async (publicId) => {
+  try {
+    await cloudinary.uploader.destroy(publicId);
+  } catch (error) {
+    console.error('Cloudinary Delete Error:', error);
+    throw error;
+  }
+};
 
 const saveHomeBanner = (req, res) => {
   const id = req.params.id;
@@ -77,12 +33,12 @@ const saveHomeBanner = (req, res) => {
   const banners = [];
   for (let i = 0; i < desktopImagePaths.length; i++) {
       banners.push({
-          desktop_image_path: desktopImagePaths[i] ? desktopImagePaths[i].filename : '',
-          mobile_image_path: mobileImagePaths[i] ? mobileImagePaths[i].filename : '',
-          tablet_image_path: tabletImagePaths[i] ? tabletImagePaths[i].filename : '',
-          alt_tag_desktop: alt_tags_desktop[i] || '',
-          alt_tag_mobile: alt_tags_mobile[i] || '',
-          alt_tag_tablet: alt_tags_tablet[i] || ''
+          desktop_image_path: desktopImagePaths[i] ? desktopImagePaths[i].path : '',
+          mobile_image_path: mobileImagePaths[i] ? mobileImagePaths[i].path : '',
+          tablet_image_path: tabletImagePaths[i] ? tabletImagePaths[i].path : '',
+          alt_tag_desktop: alt_tags_desktop || '',
+          alt_tag_mobile: alt_tags_mobile || '',
+          alt_tag_tablet: alt_tags_tablet || ''
       });
   }
 
@@ -111,44 +67,6 @@ const saveHomeBanner = (req, res) => {
   }
 };
 
-// Middleware for handling file upload (using multer)
-// const multer = require('multer');
-// const upload = multer({
-//   storage: multer.diskStorage({
-//     destination: (req, file, cb) => cb(null, 'uploads/home_banner/'),
-//     filename: (req, file, cb) => cb(null, Date.now() + path.extname(file.originalname))
-//   })
-// });
-
-// // Create new home banner entry
-// const createMetaInfo = async (req, res) => {
-//   try {
-//     upload.single('image')(req, res, async (err) => {
-//       if (err) return res.status(400).send(err.message);
-
-//       const {
-//         meta_title,
-//         meta_keywords,
-//         meta_description,
-//         heading,
-//         alt_tag
-//       } = req.body;
-
-//       const image_path = req.file ? req.file.filename : null;
-
-//       try {
-//         const result = await createImageEntry(meta_title, meta_keywords, meta_description, heading, alt_tag, image_path);
-//         res.status(201).json({ success: true, result });
-//       } catch (dbError) {
-//         res.status(500).json({ success: false, message: dbError.message });
-//       }
-//     });
-//   } catch (error) {
-//     res.status(500).json({ success: false, message: error.message });
-//   }
-// };
-
-// Get all home banners
 const getAllBanners = async (req, res) => {
   try {
     const results = await getAllHomeBanners();
@@ -190,8 +108,10 @@ const deleteBanner = async (req, res) => {
   if (isNaN(id)) return res.status(400).json({ success: false, message: 'Invalid ID' });
 
   try {
-    const imagePath = await getImagePathByID(id);
-    if (imagePath) fs.unlinkSync(path.join(__dirname, '..', 'uploads', 'home_banner', imagePath));
+    const {desktopimagePath, mobile, tablet} = await getImagePathByID(id);
+    if (desktopimagePath) await deleteFromCloudinary(desktopimagePath);
+    if (mobile) await deleteFromCloudinary(mobile);
+    if (tablet) await deleteFromCloudinary(tablet);
     
     await deleteHomeBannerFromDB(id);
     res.status(200).json({ success: true, message: 'Home banner deleted successfully' });
@@ -200,109 +120,16 @@ const deleteBanner = async (req, res) => {
   }
 };
 
-// Update home banner entry
-// const updateBanner = async (req, res) => {
-//   const id = parseInt(req.params.id, 10);
-//   if (isNaN(id)) return res.status(400).json({ success: false, message: 'Invalid ID' });
 
-//   upload.single('image')(req, res, async (err) => {
-//     if (err) return res.status(400).send(err.message);
-
-//     const {
-//       meta_title,
-//       meta_keywords,
-//       meta_description,
-//       heading,
-//       alt_tag
-//     } = req.body;
-//     const image_path = req.file ? req.file.filename : null;
-
-//     try {
-//       const oldImagePath = await getImagePathByID(id);
-
-//       const result = await updateHomeBannerEntry(id, meta_title, meta_keywords, meta_description, heading, alt_tag, image_path);
-
-//       if (oldImagePath && image_path && oldImagePath !== image_path) {
-//         fs.unlinkSync(path.join('uploads/home_banner/', oldImagePath));
-//       }
-
-//       res.json({ message: 'Data updated successfully', affectedRows: result.affectedRows });
-//     } catch (error) {
-//       res.status(500).json({ message: 'Failed to update data', error: error.message });
-//     }
-//   });
-// };
 
 module.exports = {
-  // createMetaInfo,
   getAllBanners,
   getBannerByID,
   updateBannerStatus,
   deleteBanner,
-  saveHomeBanner,
-  upload
-  // updateBanner
+  saveHomeBanner,  
 };
 
 
 
 
-
-
-
-
-
-// // controller/home_banner.js
-// const path = require('path');
-// const { createImageEntry } = require('../model/home_banner');
-
-// // Middleware for handling file upload (using multer)
-// const multer = require('multer');
-// const upload = multer({
-//     storage: multer.diskStorage({
-//         destination: (req, file, cb) => {
-//             cb(null, 'uploads/home_banner/');
-//         },
-//         filename: (req, file, cb) => {
-//             cb(null, Date.now() + path.extname(file.originalname));
-//         },
-//     }),
-// });
-
-// const uploadImage = upload.single('image'); // Use multer's single file upload middleware
-
-// const createMetaInfo = async (req, res) => {
-//     try {
-//         // First handle file upload
-//         uploadImage(req, res, async (err) => {
-//             if (err) {
-//                 return res.status(400).send(err.message); // Handle file upload errors
-//             }
-
-//             // After file upload, process meta information
-//             const {
-//                 meta_title,
-//                 meta_keywords,
-//                 meta_description,
-//                 heading,
-//                 alt_tag
-//             } = req.body;
-            
-//             const image_path = req.file ? req.file.filename : null;
-
-//             try {
-//                 // Call the function to create an entry in the database
-//                 const result = await createImageEntry(meta_title, meta_keywords, meta_description, heading, alt_tag, image_path);
-//                 res.status(201).json({ success: true, result });
-//             } catch (dbError) {
-//                 // Handle database errors
-//                 res.status(500).json({ success: false, message: dbError.message });
-//             }
-//         });
-//     } catch (error) {
-//         // Handle any unexpected errors
-//         res.status(500).json({ success: false, message: error.message });
-//     }
-// };
-
-// module.exports = { createMetaInfo };

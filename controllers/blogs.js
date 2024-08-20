@@ -14,38 +14,6 @@ const {
     updateBlog 
 } = require('../model/blogs');
 
-// //to handle file upload
-// const upload = multer({
-//     storage: multer.diskStorage({
-//         destination: (req, file, cb) => cb(null, 'uploads/blogs'),
-//         filename: (req, file, cb) => cb (null, Date.now() + path.extname(file.originalname))
-//     })
-// });
-
-// //add blog
-// const createBlog = async (req, res) => {
-//     try {
-//         upload.single('image')(req, res, async (err) => {
-//             if (err) return res.status(400).send(err.message);
-
-//             const {
-//                 blogName, blogBy, blogDate, blogTags, blogLink, alt_tag, content, schema_data
-//             } = req.body;
-
-//             const image_path = req.file ? req.file.filename :null;
-
-//             try {
-//                 const result = await addBlogs ( blogName, blogBy, blogDate, blogTags, blogLink, alt_tag, content, schema_data, image_path);
-//                 res.status(201).json({success: true, result});
-//             } catch (dbError) {
-//                 res.status(500).json({success: false, message: dbError.message});
-//             }
-//         });
-//     } catch (error){
-//         res.status(500).json({success: false, message: error.message});
-//     }
-// };
-
 const storage = new CloudinaryStorage({
   cloudinary: cloudinary,
   params: {
@@ -119,23 +87,6 @@ const createBlog = async (req, res) => {
     res.status(500).json({ success: false, message: 'Server Error: ' + error.message });
   }
 };
-
-
-
-
-
-
-
-//   app.post("/api/upload", upload.single("file"), async (req, res) => {
-//     try {
-//       const result = await cloudinary.uploader.upload(req.file.path);
-//       res.status(200).json({ url: result.secure_url, public_id: result.public_id });
-//     } catch (error) {
-//       console.error(error);
-//       res.status(500).json({ error: "Upload failed" });
-//     }
-//   });
-
 
 //get all blogs
 const getBlogs = async (req, res) => {

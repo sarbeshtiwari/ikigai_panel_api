@@ -184,19 +184,19 @@ const updateAbout = async (req, res) => {
     } = req.body;
     const newImageFile = req.file;
     const newImagePath = newImageFile ? newImageFile.path : null;
-    let newImagePublicId = newImageFile ? newImageFile.filename : null;
+    let image_path = newImageFile ? newImageFile.filename : null;
 
     try {
-      const oldImagePath = await getImagePathById(id);
+      const oldImagePath = await getImagePathByID(id);
       let cloudinaryResult;
 
       // Upload new image to Cloudinary if provided
       if (newImagePath) {
         cloudinaryResult = await uploadToCloudinary(newImagePath);
-        newImagePublicId = cloudinaryResult.secure_url;
+        image_path = cloudinaryResult.secure_url;
 
         // Remove old image from Cloudinary if it exists and is different
-        if (oldImagePath && oldImagePath !== newImagePublicId) {
+        if (oldImagePath && oldImagePath !== image_path) {
           await deleteFromCloudinary(oldImagePath);
         }
       }

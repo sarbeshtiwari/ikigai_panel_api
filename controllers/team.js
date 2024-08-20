@@ -13,15 +13,6 @@ const {
     updateOurTeam
 } = require('../model/team');
 
-// Middleware for handling file upload (using multer)
-
-// const upload = multer({
-//   storage: multer.diskStorage({
-//     destination: (req, file, cb) => cb(null, 'uploads/our_team/'),
-//     filename: (req, file, cb) => cb(null, Date.now() + path.extname(file.originalname))
-//   })
-// });
-
 const storage = new CloudinaryStorage({
   cloudinary: cloudinary,
   params: {
@@ -135,7 +126,7 @@ const deleteOurTeam = async (req, res) => {
   if (isNaN(id)) return res.status(400).json({ success: false, message: 'Invalid ID' });
 
   try {
-    const imagePath = await getImagePathById(id);
+    const imagePath = await getImagePathByID(id);
     if (imagePath) await deleteFromCloudinary(imagePath);
     
     await deleteOurTeamFromDB(id);
@@ -161,7 +152,7 @@ const updateTeam = async (req, res) => {
     let newImagePublicId = newImageFile ? newImageFile.filename : null;
 
     try {
-      const oldImagePath = await getImagePathById(id);
+      const oldImagePath = await getImagePathByID(id);
       let cloudinaryResult;
 
       // Upload new image to Cloudinary if provided
@@ -174,7 +165,7 @@ const updateTeam = async (req, res) => {
           await deleteFromCloudinary(oldImagePath);
         }
       }
-      const result = await updateOurTeam(id, name, designation, heading, image_path, description);
+      const result = await updateOurTeam(id, name, designation, heading, newImagePublicId, description);
 
       if (newImagePath) {
         fs.unlink(newImagePath, (err) => {

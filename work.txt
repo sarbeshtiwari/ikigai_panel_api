@@ -20,6 +20,14 @@ dashboard requirements:-
 
 banner_api not working
 
+20-08-2024
 
 testimonial video is not uploading
-services svg images are not uploading
+services svg images are not uploading {not supported by cloudnery)
+meta new data is adding in place of update (manage at frontend) {DONE}
+home_banner image url issue {DONE}
+updating image in service {DONE}
+our team image is not showing on adding{frontend} {DONE}
+
+on editing image is not prefilled in anyone prefilled it
+delete image from cloudnery 

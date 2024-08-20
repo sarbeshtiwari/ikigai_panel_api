@@ -16,18 +16,6 @@ const {
     updateOurServices
 } = require('../model/services');
 
-// Middleware for handling file upload (using multer)
-
-// const upload = multer({
-//     storage: multer.diskStorage({
-//       destination: (req, file, cb) => cb(null, 'uploads/our_services/'),
-//       filename: (req, file, cb) => cb(null, Date.now() + path.extname(file.originalname))
-//     }),
-//     limits: { fileSize: 5 * 1024 * 1024 } // Limit file size to 5MB
-//   }).fields([
-//     { name: 'image_path', maxCount: 1 },
-//     { name: 'home_image_path', maxCount: 1 }
-//   ]);
 const storage = new CloudinaryStorage({
   cloudinary: cloudinary,
   params: {
@@ -38,6 +26,16 @@ const storage = new CloudinaryStorage({
 });
 
 const upload = multer({ storage: storage });
+
+const deleteFromCloudinary = async (publicId) => {
+  try {
+    await cloudinary.uploader.destroy(publicId);
+  } catch (error) {
+    console.error('Cloudinary Delete Error:', error);
+    throw error;
+  }
+};
+
 // Create new Our Services entry
 const createOurServices = async (req, res) => {
   upload.fields([
@@ -78,7 +76,6 @@ const createOurServices = async (req, res) => {
   });
 };
 
-  
 
 // Get all Our Services
 const getOurServices = async (req, res) => {
@@ -155,17 +152,11 @@ const deleteOurServices = async (req, res) => {
   
       // Delete image files if they exist
       if (imagePath) {
-        const imageFilePath = path.join(__dirname, '..', 'uploads', 'our_services', imagePath);
-        if (fs.existsSync(imageFilePath)) {
-          fs.unlinkSync(imageFilePath);
-        }
+        if (imagePath) await deleteFromCloudinary(imagePath);
       }
   
       if (homeImagePath) {
-        const homeImageFilePath = path.join(__dirname, '..', 'uploads', 'our_services', homeImagePath);
-        if (fs.existsSync(homeImageFilePath)) {
-          fs.unlinkSync(homeImageFilePath);
-        }
+        if (homeImagePath) await deleteFromCloudinary(homeImagePath);
       }
   
       // Delete the record from the database
@@ -182,8 +173,18 @@ const updateServices = async (req, res) => {
     const id = parseInt(req.params.id, 10);
     if (isNaN(id)) return res.status(400).json({ success: false, message: 'Invalid ID' });
   
-    upload(req, res, async (err) => {
-      if (err) return res.status(400).json({ success: false, message: err.message });
+    upload.fields([
+      { name: 'image_path', maxCount: 1 },
+      { name: 'home_image_path', maxCount: 1 }
+    ])(req, res, async (err) => {
+      if (err) {
+        console.error('Upload Error:', err);
+        return res.status(400).send(err.message);
+      }
+  
+      // Extract Cloudinary URLs or public IDs from the request
+      const image_path = req.files['image_path'] ? req.files['image_path'][0].path : null;
+      const home_image_path = req.files['home_image_path'] ? req.files['home_image_path'][0].path : null;
   
       const {
        
@@ -192,8 +193,6 @@ const updateServices = async (req, res) => {
         description
       } = req.body;
   
-      const image_path = req.files['image_path'] ? req.files['image_path'][0].filename : null;
-      const home_image_path = req.files['home_image_path'] ? req.files['home_image_path'][0].filename : null;
   
       try {
         // Fetch old image paths from the database

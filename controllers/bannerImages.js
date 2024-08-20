@@ -3,26 +3,6 @@ const path = require('path');
 const db = require('../model/bannerImages');
 
 
-
-
-// const storage = multer.diskStorage({
-//     destination: (req, file, cb) => {
-//         let folder = '';
-//         if (file.fieldname === 'desktop_image') {
-//             folder = 'uploads/banner_image/desktop';
-//         } else if (file.fieldname === 'mobile_image') {
-//             folder = 'uploads/banner_image/mobile';
-//         } else if (file.fieldname === 'tablet_image') {
-//             folder = 'uploads/banner_image/tablet';
-//         }
-//         cb(null, folder);
-//     },
-//     filename: (req, file, cb) => {
-//         const filename = req.body.filename || Date.now() + path.extname(file.originalname);
-//         cb(null, filename);
-//     }
-// });
-
 // Controller methods
 const saveBanner = async (req, res) => {
     const id = req.params.id;

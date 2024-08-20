@@ -15,44 +15,16 @@ const storage = new CloudinaryStorage({
 });
 
 const upload = multer({ storage: storage });
-  
-    
-  
- 
-
-const uploadToCloudinary = async (image_filePath, video_filePath) => {
-    try {
-        const uploadPromises = [];
-
-        if (image_filePath) {
-            uploadPromises.push(cloudinary.uploader.upload(image_filePath, { resource_type: 'image' }));
-        }
-        
-        if (video_filePath) {
-            uploadPromises.push(cloudinary.uploader.upload(video_filePath, { resource_type: 'video' }));
-        }
-
-        const [imageResult, videoResult] = await Promise.all(uploadPromises);
-
-        return {
-            image_url: imageResult ? imageResult.secure_url : null,
-            video_url: videoResult ? videoResult.secure_url : null
-        };
-    } catch (error) {
-        console.error('Cloudinary Upload Error:', error);
-        throw error;
-    }
-};
-
 
 const deleteFromCloudinary = async (publicId) => {
-  try {
-    await cloudinary.uploader.destroy(publicId);
-  } catch (error) {
-    console.error('Cloudinary Delete Error:', error);
-    throw error;
-  }
-};
+    try {
+      await cloudinary.uploader.destroy(publicId);
+    } catch (error) {
+      console.error('Cloudinary Delete Error:', error);
+      throw error;
+    }
+  };
+  
 
 // Create a new testimonial
 const createTestimonial = async (req, res) => {
@@ -86,9 +58,6 @@ const createTestimonial = async (req, res) => {
         res.status(500).json({ success: false, message: 'Server Error: ' + error.message });
     }
 };
-
-
-
 
 // Update an existing testimonial
 const updateTestimonial = (req, res) => {
@@ -156,8 +125,8 @@ const UpdateTestimonialStatus = async (req, res) => {
   
     try {
       const { imagePath, videoPath} = await testimonialModel.getImagePathByID(id);
-      if (imagePath) fs.unlinkSync(path.join(__dirname, '..', 'uploads', 'testimonials', imagePath));
-      if (videoPath) fs.unlinkSync(path.join(__dirname, '..', 'uploads', 'testimonials', videoPath));
+      if (imagePath) await deleteFromCloudinary(imagePath);
+      if (videoPath) await deleteFromCloudinary(videoPath);
       
       await testimonialModel.deleteTestimonialFromDB(id);
       res.status(200).json({ success: true, message: 'our Testimonial deleted successfully' });
