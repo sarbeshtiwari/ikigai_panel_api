@@ -31,3 +31,5 @@ our team image is not showing on adding{frontend} {DONE}
 
 on editing image is not prefilled in anyone prefilled it
 delete image from cloudnery {DONE}
+
+header and footer
