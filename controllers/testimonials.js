@@ -1,20 +1,6 @@
 const testimonialModel = require('../model/testimonials');
-const { CloudinaryStorage } = require('multer-storage-cloudinary');
 const cloudinary = require('../config/im');
-const multer = require('multer');
-const fs = require('fs');
-const path = require('path');
 
-const storage = new CloudinaryStorage({
-    cloudinary: cloudinary,
-    params: {
-        folder: 'uploads/testimonials',
-        allowed_formats: ['jpg', 'png', 'jpeg', 'mp4'], // Add other formats if needed
-        public_id: (req, file) => file.originalname,
-    },
-});
-
-const upload = multer({ storage: storage });
 
 const deleteFromCloudinary = async (publicId) => {
     try {
@@ -63,8 +49,8 @@ const createTestimonial = async (req, res) => {
 const updateTestimonial = (req, res) => {
     const id = req.params.id;
     const { alt_tag, videoURL} = req.body;
-    const image_path = req.files['image'] ? req.files['image'][0].filename : null;
-    const video_path = req.files['video'] ? req.files['video'][0].filename : null;
+    const image_path = req.files['image'] ? req.files['image'][0].path : null;
+    const video_path = req.files['video'] ? req.files['video'][0].path : null;
 
     const testimonialData = { image_path, alt_tag, video_path, videoURL};
 
