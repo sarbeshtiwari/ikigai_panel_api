@@ -10,7 +10,7 @@ const {
     updateBlogsStatus, 
     getBlogsById, 
     deleteBlogFromDB, 
-    getImagePathById, 
+    getImagePathById, getBlogsBySlug,
     updateBlog 
 } = require('../model/blogs');
 
@@ -122,6 +122,17 @@ const getBlogById = async (req, res) => {
       }
 };
 
+//get blog by ID
+const getBlogBySlugURL = async (req, res) => {
+  const slugURL = req.params
+  try {
+      const result = await getBlogsBySlug(slugURL);
+      res.status(200).json({ success: true, data: result });
+  } catch (err) {
+      res.status(500).json({ success: false, message: err.message });
+    }
+};
+
 // Update blog status
 const updateBlogStatus = async (req, res) => {
     const { id, status } = req.body;
@@ -203,5 +214,5 @@ const updateBlogs = async (req, res) => {
 };
 
 module.exports = {
-    createBlog, getBlogs, getBlogById, updateBlogStatus, deleteBlog, updateBlogs, upload,
+    createBlog, getBlogs, getBlogById, getBlogBySlugURL, updateBlogStatus, deleteBlog, updateBlogs, upload,
 }

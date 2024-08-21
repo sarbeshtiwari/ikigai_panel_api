@@ -35,7 +35,8 @@ delete image from cloudnery {DONE}
 21-08-2024
 header and footer
 slug url {DONE}
-image formating
+image formating 
 home banner validation 
 description column size (increse)
 our team validation
+on editing image is not prefilled in anyone prefilled it

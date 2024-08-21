@@ -32,40 +32,63 @@ const saveHomeBanner = (req, res) => {
 
   const banners = [];
   for (let i = 0; i < desktopImagePaths.length; i++) {
-      banners.push({
-          desktop_image_path: desktopImagePaths[i] ? desktopImagePaths[i].path : '',
-          mobile_image_path: mobileImagePaths[i] ? mobileImagePaths[i].path : '',
-          tablet_image_path: tabletImagePaths[i] ? tabletImagePaths[i].path : '',
-          alt_tag_desktop: alt_tags_desktop || '',
-          alt_tag_mobile: alt_tags_mobile || '',
-          alt_tag_tablet: alt_tags_tablet || ''
-      });
+    banners.push({
+      desktop_image_path: desktopImagePaths[i] ? desktopImagePaths[i].path : '',
+      mobile_image_path: mobileImagePaths[i] ? mobileImagePaths[i].path : '',
+      tablet_image_path: tabletImagePaths[i] ? tabletImagePaths[i].path : '',
+      alt_tag_desktop: alt_tags_desktop[i] || '',
+      alt_tag_mobile: alt_tags_mobile[i] || '',
+      alt_tag_tablet: alt_tags_tablet[i] || ''
+    });
+  }
+
+  // Check if all banners are empty
+  const allBannersEmpty = banners.every(banner => 
+    !banner.desktop_image_path && 
+    !banner.mobile_image_path && 
+    !banner.tablet_image_path &&
+    !banner.alt_tag_desktop && 
+    !banner.alt_tag_mobile && 
+    !banner.alt_tag_tablet
+  );
+
+  if (allBannersEmpty) {
+    return res.status(400).send('Select at least one image and its alt tag');
   }
 
   if (id) {
-      banners.forEach((banner, index) => {
-        updateHomeBanner(id, banner, (err) => {
-              if (err) {
-                  console.error('Error updating banner:', err);
-                  res.status(500).send('Error updating banner');
-                  return;
-              }
-          });
+    let updateCount = 0;
+    banners.forEach((banner, index) => {
+      updateHomeBanner(id, banner, (err) => {
+        if (err) {
+          console.error('Error updating banner:', err);
+          res.status(500).send('Error updating banner');
+          return;
+        }
+        updateCount++;
+        if (updateCount === banners.length) {
+          res.send('Banners updated successfully');
+        }
       });
-      res.send('Banners updated successfully');
+    });
   } else {
-      banners.forEach((banner) => {
-          insertBanner(banner, (err) => {
-              if (err) {
-                  console.error('Error inserting banner:', err);
-                  res.status(500).send('Error inserting banner');
-                  return;
-              }
-          });
+    let insertCount = 0;
+    banners.forEach((banner) => {
+      insertBanner(banner, (err) => {
+        if (err) {
+          console.error('Error inserting banner:', err);
+          res.status(500).send('Error inserting banner');
+          return;
+        }
+        insertCount++;
+        if (insertCount === banners.length) {
+          res.send('Banners added successfully');
+        }
       });
-      res.send('Banners added successfully');
+    });
   }
 };
+
 
 const getAllBanners = async (req, res) => {
   try {

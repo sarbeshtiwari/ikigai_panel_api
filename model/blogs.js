@@ -64,6 +64,18 @@ const getBlogsById = (id) => {
     });
 };
 
+const getBlogsBySlug = (slugURL) => {
+    const query = 'SELECT * FROM blogs WHERE slugURL = ?';
+    return new Promise((resolve, reject) => {
+        db.query(query, [slugURL], (err, results) => {
+            if (err) return reject(err);
+            if (results.length === 0) return reject(new Error('Blog not found')); 
+            resolve(results[0]);
+        });
+    });
+};
+
+
 //delete a blog
 const deleteBlogFromDB = (id) => {
     const query = 'DELETE FROM blogs WHERE id = ?';
@@ -99,5 +111,5 @@ const updateBlog = (id,  blogName, blogBy, blogDate, blogTags, blogLink, alt_tag
 };
 
 module.exports = {
-    addBlogs, getAllBlogs, updateBlogsStatus, getBlogsById, deleteBlogFromDB, getImagePathById, updateBlog
+    addBlogs, getAllBlogs, updateBlogsStatus, getBlogsById, getBlogsBySlug, deleteBlogFromDB, getImagePathById, updateBlog
 };
