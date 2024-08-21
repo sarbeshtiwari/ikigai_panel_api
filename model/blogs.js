@@ -75,6 +75,20 @@ const getBlogsBySlug = (slugURL) => {
     });
 };
 
+const getAllRecentBlogs = () => {
+    const query = 'SELECT * FROM blogs ORDER BY created_at DESC';
+    return new Promise((resolve, reject) => {
+        db.query(query, (err, results) => {
+            if (err) {
+                console.error('Error executing query:', err); // Add logging here
+                return reject(err);
+            }
+            resolve(results);
+        });
+    });
+};
+
+
 
 //delete a blog
 const deleteBlogFromDB = (id) => {
@@ -111,5 +125,5 @@ const updateBlog = (id,  blogName, blogBy, blogDate, blogTags, blogLink, alt_tag
 };
 
 module.exports = {
-    addBlogs, getAllBlogs, updateBlogsStatus, getBlogsById, getBlogsBySlug, deleteBlogFromDB, getImagePathById, updateBlog
+    addBlogs, getAllBlogs, updateBlogsStatus, getAllRecentBlogs, getBlogsById, getBlogsBySlug, deleteBlogFromDB, getImagePathById, updateBlog
 };

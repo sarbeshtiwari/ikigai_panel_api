@@ -3,7 +3,7 @@ const router = express.Router();
 const {
     createBlog, 
     getBlogs, 
-    getBlogById, getBlogBySlugURL,
+    getBlogById, getBlogBySlugURL, getRecentBlogs,
     updateBlogStatus, 
     deleteBlog, 
     updateBlogs, upload
@@ -20,6 +20,9 @@ router.get('/getByID/:id', getBlogById);
 
 // Route to get blog by ID
 router.get('/getBySlug/:id', getBlogBySlugURL);
+
+// Route to get blog by ID
+router.get('/getRecentBlogs', getRecentBlogs);
 
 // Route to update blog status
 router.patch('/updateStatus', updateBlogStatus);

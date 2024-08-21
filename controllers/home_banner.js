@@ -36,9 +36,9 @@ const saveHomeBanner = (req, res) => {
       desktop_image_path: desktopImagePaths[i] ? desktopImagePaths[i].path : '',
       mobile_image_path: mobileImagePaths[i] ? mobileImagePaths[i].path : '',
       tablet_image_path: tabletImagePaths[i] ? tabletImagePaths[i].path : '',
-      alt_tag_desktop: alt_tags_desktop[i] || '',
-      alt_tag_mobile: alt_tags_mobile[i] || '',
-      alt_tag_tablet: alt_tags_tablet[i] || ''
+      alt_tag_desktop: alt_tags_desktop || '',
+      alt_tag_mobile: alt_tags_mobile || '',
+      alt_tag_tablet: alt_tags_tablet || ''
     });
   }
 

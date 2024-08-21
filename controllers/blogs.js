@@ -10,7 +10,7 @@ const {
     updateBlogsStatus, 
     getBlogsById, 
     deleteBlogFromDB, 
-    getImagePathById, getBlogsBySlug,
+    getImagePathById, getBlogsBySlug, getAllRecentBlogs,
     updateBlog 
 } = require('../model/blogs');
 
@@ -108,6 +108,16 @@ const getBlogs = async (req, res) => {
         res.status(500).json({success: false, message: error.message});
     }
 };
+
+const getRecentBlogs = async (req, res) => {
+  try{
+      const results = await getAllRecentBlogs();
+      res.status(200).json(results);
+  } catch (error) {
+      res.status(500).json({success: false, message: error.message});
+  }
+};
+
 
 //get blog by ID
 const getBlogById = async (req, res) => {
@@ -214,5 +224,5 @@ const updateBlogs = async (req, res) => {
 };
 
 module.exports = {
-    createBlog, getBlogs, getBlogById, getBlogBySlugURL, updateBlogStatus, deleteBlog, updateBlogs, upload,
+    createBlog, getBlogs, getBlogById, getBlogBySlugURL, getRecentBlogs, updateBlogStatus, deleteBlog, updateBlogs, upload,
 }
