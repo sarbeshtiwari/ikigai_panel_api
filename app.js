@@ -20,6 +20,7 @@ const userQuery = require('./routes/query');
 const appointment = require('./routes/appointment');
 const authRoutes = require('./routes/authRoutes');
 const protectedRoutes = require('./routes/protectedRoutes');
+const headerFooter = require('./routes/header_footer');
 
 
 // const __filename = fileURLToPath(import.meta.url);
@@ -47,6 +48,7 @@ app.use('/testimonials', testimonials);
 app.use('/userQuery', userQuery);
 app.use('/appointment', appointment);
 app.use('/auth', authRoutes);
+app.use('/headerFooter', headerFooter);
 app.use('/api', protectedRoutes);
 
 

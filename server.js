@@ -1,69 +1,58 @@
 const express = require('express');
-const mysql = require('mysql2');
-const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
+const multer = require('multer');
+const bodyParser = require('body-parser');
 const cors = require('cors');
+const path = require('path');
+const fs = require('fs');
 
+// Initialize express app
 const app = express();
-app.use(express.json());
+const port = process.env.PORT || 5000;
+
+// Setup middleware
 app.use(cors());
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
 
-const db = mysql.createConnection({
-  host: 'localhost',
-  user: 'root',
-  password: 'password',
-  database: 'your_database'
+// Setup Multer for file uploads
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        cb(null, 'uploads/');
+    },
+    filename: (req, file, cb) => {
+        cb(null, file.fieldname + '-' + Date.now() + path.extname(file.originalname));
+    }
+});
+const upload = multer({ storage: storage });
+
+// Create uploads directory if it doesn't exist
+if (!fs.existsSync('uploads')) {
+    fs.mkdirSync('uploads');
+}
+
+// API endpoint to handle form data
+app.post('/api/submit', upload.single('logo'), (req, res) => {
+    const { phoneNumber, footerTitle, footerDescription, address, contactPhones, email } = req.body;
+    const logo = req.file ? req.file.path : null;
+    const buttons = JSON.parse(req.body.buttons);
+
+    // Handle data here (e.g., save to database)
+
+    console.log({
+        logo,
+        buttons,
+        phoneNumber,
+        footerTitle,
+        footerDescription,
+        address,
+        contactPhones,
+        email
+    });
+
+    res.json({ message: 'Data received successfully!' });
 });
 
-db.connect(err => {
-  if (err) throw err;
-  console.log('Database connected');
+// Start the server
+app.listen(port, () => {
+    console.log(`Server running on http://localhost:${port}`);
 });
-
-const SECRET_KEY = 'your_secret_key'; // Replace with a secure key
-const TOKEN_EXPIRY = '10m'; // Token expires in 10 minutes
-
-// Login API
-app.post('/login', (req, res) => {
-  const { email, password } = req.body;
-
-  db.query('SELECT * FROM users WHERE email = ?', [email], async (err, results) => {
-    if (err) return res.status(500).json({ error: 'Database query error' });
-    if (results.length === 0) return res.status(401).json({ error: 'Invalid credentials' });
-
-    const user = results[0];
-
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) return res.status(401).json({ error: 'Invalid credentials' });
-
-    const token = jwt.sign({ id: user.id }, SECRET_KEY, { expiresIn: TOKEN_EXPIRY });
-    res.json({ token });
-  });
-});
-
-// Middleware to verify token
-const authenticateToken = (req, res, next) => {
-  const authHeader = req.headers['authorization'];
-  const token = authHeader && authHeader.split(' ')[1];
-  if (token == null) return res.sendStatus(401);
-
-  jwt.verify(token, SECRET_KEY, (err, user) => {
-    if (err) return res.sendStatus(403);
-    req.user = user;
-    next();
-  });
-};
-
-// Protected route example
-app.get('/protected', authenticateToken, (req, res) => {
-  res.json({ message: 'This is a protected route' });
-});
-
-app.listen(5000, () => {
-  console.log('Server running on port 5000');
-});
-
-
-
-
-// npm install express mysql2 bcryptjs jsonwebtoken cors
