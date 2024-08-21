@@ -46,6 +46,16 @@ const deleteFromCloudinary = async (publicId) => {
   }
 };
 
+// Utility function to create a URL slug
+const createSlug = (text) => {
+  return text
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9\s-]/g, '')
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-+|-+$/g, '');
+};
 
 
 // Add blog
@@ -70,8 +80,9 @@ const createBlog = async (req, res) => {
         const {
           blogName, blogBy, blogDate, blogTags, blogLink, alt_tag, content, schema_data
         } = req.body;
+        const slugURL = createSlug(blogName);
 
-        const result = await addBlogs(blogName, blogBy, blogDate, blogTags, blogLink, alt_tag, content, schema_data, image_path);
+        const result = await addBlogs(blogName, blogBy, blogDate, blogTags, blogLink, alt_tag, content, schema_data, image_path, slugURL);
         res.status(201).json({ success: true, result });
       } catch (dbError) {
         console.error('Database Error:', dbError); // More detailed logging
@@ -151,6 +162,7 @@ const updateBlogs = async (req, res) => {
     const {
       blogName, blogBy, blogDate, blogTags, blogLink, alt_tag, content, schema_data
     } = req.body;
+    const slugURL = createSlug(blogName);
     
     const newImageFile = req.file;
     const newImagePath = newImageFile ? newImageFile.path : null;
@@ -173,7 +185,7 @@ const updateBlogs = async (req, res) => {
       }
 
       // Update the blog entry in the database
-      const result = await updateBlog(id, blogName, blogBy, blogDate, blogTags, blogLink, alt_tag, content, schema_data, newImagePublicId);
+      const result = await updateBlog(id, blogName, blogBy, blogDate, blogTags, blogLink, alt_tag, content, schema_data, newImagePublicId, slugURL);
 
       // Delete the temporary file
       if (newImagePath) {

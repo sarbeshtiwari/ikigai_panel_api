@@ -32,4 +32,10 @@ our team image is not showing on adding{frontend} {DONE}
 on editing image is not prefilled in anyone prefilled it
 delete image from cloudnery {DONE}
 
+21-08-2024
 header and footer
+slug url {DONE}
+image formating
+home banner validation 
+description column size (increse)
+our team validation

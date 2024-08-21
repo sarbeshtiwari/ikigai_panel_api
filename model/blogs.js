@@ -1,10 +1,10 @@
 const db = require('../config/db');
 
 //add blogs
-const addBlogs = ( blogName, blogBy, blogDate, blogTags, blogLink, alt_tag, content, schema_data, image_path) => {
-    const query = 'INSERT INTO blogs ( blogName, blogBy, blogDate, blogTags, blogLink, alt_tag, content, schema_data, image_path) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)';
+const addBlogs = ( blogName, blogBy, blogDate, blogTags, blogLink, alt_tag, content, schema_data, image_path, slugURL) => {
+    const query = 'INSERT INTO blogs ( blogName, blogBy, blogDate, blogTags, blogLink, alt_tag, content, schema_data, image_path, slugURL) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)';
     return new Promise((resolve, reject) => {
-        db.query(query, [ blogName, blogBy, blogDate, blogTags, blogLink, alt_tag, content, schema_data, image_path], (err, results) => {
+        db.query(query, [ blogName, blogBy, blogDate, blogTags, blogLink, alt_tag, content, schema_data, image_path, slugURL], (err, results) => {
             if (err) {
                 reject(err);
             } else {
@@ -88,10 +88,10 @@ const getImagePathById = (id) => {
 };
 
 //update blog
-const updateBlog = (id,  blogName, blogBy, blogDate, blogTags, blogLink, alt_tag, content, schema_data, image_path) => {
-    const query = 'UPDATE blogs SET blogName = ?, blogBy = ?, blogDate = ?, blogTags = ?, blogLink = ?, alt_tag = ?, content = ?, schema_data = ?, image_path = ? WHERE id = ?';
+const updateBlog = (id,  blogName, blogBy, blogDate, blogTags, blogLink, alt_tag, content, schema_data, image_path, slugURL) => {
+    const query = 'UPDATE blogs SET blogName = ?, blogBy = ?, blogDate = ?, blogTags = ?, blogLink = ?, alt_tag = ?, content = ?, schema_data = ?, image_path = ?, slugURL = ? WHERE id = ?';
     return new Promise((resolve, reject) => {
-        db.query(query, [ blogName, blogBy, blogDate, blogTags, blogLink, alt_tag, content, schema_data, image_path, id], (err, result) => {
+        db.query(query, [ blogName, blogBy, blogDate, blogTags, blogLink, alt_tag, content, schema_data, image_path, slugURL, id], (err, result) => {
             if (err) return reject(err);
             resolve(result);
         });
