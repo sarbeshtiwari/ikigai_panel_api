@@ -33,7 +33,7 @@ on editing image is not prefilled in anyone prefilled it
 delete image from cloudnery {DONE}
 
 21-08-2024
-header and footer
+header and footer {Done} {Update and fetch pending}
 slug url {DONE}
 image formating {Done} {pending, bannerimage, home banner} 
 home banner validation {DONE} 

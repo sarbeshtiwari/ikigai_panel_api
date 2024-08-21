@@ -21,9 +21,10 @@ const storage = new CloudinaryStorage({
   params: (req, file) => {
     return {
       folder: 'uploads/our_services',
-      allowed_formats: ['jpg', 'png', 'jpeg', 'svg', 'webp'], // Correct formats
+      allowed_formats: ['jpg', 'png', 'jpeg', 'svg', 'webp'],
       resource_type: file.mimetype.startsWith('image/svg') ? 'raw' : 'image',
-      public_id: file.originalname, // Use unique filename or other logic
+      format: 'svg',
+      public_id: file.originalname, 
     };
   },
 });
