@@ -50,8 +50,8 @@ on editing image is not prefilled in anyone prefilled it (Done)
 image formating {Done} 
 description column size (increase)
 upload images in .webp format
-testimonial video
-limit image size
+testimonial video {Done}
+limit image size 
 svg to png convert {some svg are uploading some are not}
 ourServices (image auto update issue) {DONE}
 auto update image in every section {done}

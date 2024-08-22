@@ -46,22 +46,57 @@ const createTestimonial = async (req, res) => {
 };
 
 // Update an existing testimonial
-const updateTestimonial = (req, res) => {
-    const id = req.params.id;
-    const { alt_tag, videoURL} = req.body;
-    const image_path = req.files['image'] ? req.files['image'][0].path : null;
-    const video_path = req.files['video'] ? req.files['video'][0].path : null;
+// const updateTestimonial = (req, res) => {
+//     const id = req.params.id;
+//     const { alt_tag, videoURL} = req.body;
+//     const image_path = req.files['image'] ? req.files['image'][0].path : null;
+//     const video_path = req.files['video'] ? req.files['video'][0].path : null;
 
-    const testimonialData = { image_path, alt_tag, video_path, videoURL};
+//     const testimonialData = { image_path, alt_tag, video_path, videoURL};
 
-    testimonialModel.updateTestimonial(id, testimonialData, (err, results) => {
-        if (err) {
-            console.error('Error updating testimonial:', err);
-            return res.status(500).json({ success: false, message: 'Failed to update testimonial.' });
-        }
-        res.status(200).json({ success: true, message: 'Testimonial updated successfully.' });
-    });
+//     testimonialModel.updateTestimonial(id, testimonialData, (err, results) => {
+//         if (err) {
+//             console.error('Error updating testimonial:', err);
+//             return res.status(500).json({ success: false, message: 'Failed to update testimonial.' });
+//         }
+//         res.status(200).json({ success: true, message: 'Testimonial updated successfully.' });
+//     });
+// };
+
+const updateTestimonial = async (req, res) => {
+  const id = req.params.id;
+  const { alt_tag, videoURL } = req.body;
+
+  try {
+      // Fetch current values
+      const { image_path: currentImagePath, video_path: currentVideoPath } = await testimonialModel.getImagePathByID(id);
+
+      // Determine new paths or retain old ones
+      const image_path = req.files['image'] ? req.files['image'][0].path : currentImagePath;
+      const video_path = req.files['video'] ? req.files['video'][0].path : currentVideoPath;
+
+      // Construct testimonial data for update
+      const testimonialData = {
+          image_path,
+          alt_tag,
+          video_path,
+          videoURL
+      };
+
+      // Update testimonial in the database
+      testimonialModel.updateTestimonial(id, testimonialData, (err, results) => {
+          if (err) {
+              console.error('Error updating testimonial:', err);
+              return res.status(500).json({ success: false, message: 'Failed to update testimonial.' });
+          }
+          res.status(200).json({ success: true, message: 'Testimonial updated successfully.' });
+      });
+  } catch (error) {
+      console.error('Error fetching existing testimonial data:', error);
+      res.status(500).json({ success: false, message: 'Failed to fetch existing testimonial data.' });
+  }
 };
+
 
 // Fetch a testimonial by ID
 const getTestimonialById = (req, res) => {
