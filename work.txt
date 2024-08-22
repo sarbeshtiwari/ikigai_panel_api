@@ -55,3 +55,10 @@ limit image size
 svg to png convert {some svg are uploading some are not}
 ourServices (image auto update issue) {DONE}
 auto update image in every section {done}
+
+
+
+
+mail has to be send to user also (content update)
+metsa details on website
+about section spacing
