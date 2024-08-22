@@ -31,6 +31,16 @@ const storage = new CloudinaryStorage({
 
 const upload = multer({ storage: storage });
 
+const uploadToCloudinary = async (filePath) => {
+  try {
+      const result = await cloudinary.uploader.upload(filePath);
+      return result;
+  } catch (error) {
+      console.error('Cloudinary Upload Error:', error);
+      throw error;
+  }
+};
+
 const deleteFromCloudinary = async (publicId) => {
   try {
     await cloudinary.uploader.destroy(publicId);
@@ -173,68 +183,142 @@ const deleteOurServices = async (req, res) => {
   };
 
 // Update Our Services entry
-const updateServices = async (req, res) => {
-    const id = parseInt(req.params.id, 10);
-    if (isNaN(id)) return res.status(400).json({ success: false, message: 'Invalid ID' });
+// const updateServices = async (req, res) => {
+//     const id = parseInt(req.params.id, 10);
+//     if (isNaN(id)) return res.status(400).json({ success: false, message: 'Invalid ID' });
   
-    upload.fields([
+//     upload.fields([
+//       { name: 'image_path', maxCount: 1 },
+//       { name: 'home_image_path', maxCount: 1 }
+//     ])(req, res, async (err) => {
+//       if (err) {
+//         console.error('Upload Error:', err);
+//         return res.status(400).send(err.message);
+//       }
+  
+//       // Extract Cloudinary URLs or public IDs from the request
+//       const image_path = req.files['image_path'] ? req.files['image_path'][0].path : null;
+//       const home_image_path = req.files['home_image_path'] ? req.files['home_image_path'][0].path : null;
+  
+//       const {
+       
+//         heading,
+//         home_data,
+//         description
+//       } = req.body;
+  
+  
+//       try {
+//         // Fetch old image paths from the database
+//         const { oldImagePath, oldHomeImagePath } = await getImagePathByID(id);
+  
+//         // Update the entry in the database
+//         const result = await updateOurServices(
+//           id,
+         
+//           heading,
+//           home_image_path,
+//           home_data,
+//           image_path,
+//           description
+          
+//         );
+  
+//         // Delete old image files if they exist and are different from new ones
+//         if (oldImagePath && image_path && oldImagePath !== image_path) {
+//           const oldImageFilePath = path.join('uploads/our_services/', oldImagePath);
+//           if (fs.existsSync(oldImageFilePath)) {
+//             fs.unlinkSync(oldImageFilePath);
+//           }
+//         }
+  
+//         if (oldHomeImagePath && home_image_path && oldHomeImagePath !== home_image_path) {
+//           const oldHomeImageFilePath = path.join('uploads/our_services/', oldHomeImagePath);
+//           if (fs.existsSync(oldHomeImageFilePath)) {
+//             fs.unlinkSync(oldHomeImageFilePath);
+//           }
+//         }
+  
+//         res.json({ message: 'Data updated successfully', affectedRows: result.affectedRows });
+//       } catch (error) {
+//         res.status(500).json({ success: false, message: 'Failed to update data', error: error.message });
+//       }
+//     });
+//   };
+
+
+const updateServices = async (req, res) => {
+  const id = parseInt(req.params.id, 10);
+  if (isNaN(id)) return res.status(400).json({ success: false, message: 'Invalid ID' });
+
+  upload.fields([
       { name: 'image_path', maxCount: 1 },
       { name: 'home_image_path', maxCount: 1 }
-    ])(req, res, async (err) => {
+  ])(req, res, async (err) => {
       if (err) {
-        console.error('Upload Error:', err);
-        return res.status(400).send(err.message);
+          console.error('Upload Error:', err);
+          return res.status(400).send(err.message);
       }
-  
-      // Extract Cloudinary URLs or public IDs from the request
-      const image_path = req.files['image_path'] ? req.files['image_path'][0].path : null;
-      const home_image_path = req.files['home_image_path'] ? req.files['home_image_path'][0].path : null;
-  
+
+      // Extract file paths if provided
+      const newImagePath = req.files['image_path'] ? req.files['image_path'][0].path : null;
+      const newHomeImagePath = req.files['home_image_path'] ? req.files['home_image_path'][0].path : null;
+
       const {
-       
-        heading,
-        home_data,
-        description
-      } = req.body;
-  
-  
-      try {
-        // Fetch old image paths from the database
-        const { oldImagePath, oldHomeImagePath } = await getImagePathByID(id);
-  
-        // Update the entry in the database
-        const result = await updateOurServices(
-          id,
-         
           heading,
-          home_image_path,
           home_data,
-          image_path,
           description
-          
-        );
-  
-        // Delete old image files if they exist and are different from new ones
-        if (oldImagePath && image_path && oldImagePath !== image_path) {
-          const oldImageFilePath = path.join('uploads/our_services/', oldImagePath);
-          if (fs.existsSync(oldImageFilePath)) {
-            fs.unlinkSync(oldImageFilePath);
+      } = req.body;
+
+      try {
+          // Fetch old image paths from the database
+          const { oldImagePath, oldHomeImagePath } = await getImagePathByID(id);
+          console.log(oldImagePath);
+          console.log(oldHomeImagePath);
+
+          // Prepare updated fields
+          const updateFields = {
+              heading: heading,
+              home_data: home_data,
+              description: description,
+              image_path: newImagePath || oldImagePath,
+              home_image_path: newHomeImagePath || oldHomeImagePath
+          };
+
+          // Update the entry in the database
+          const result = await updateOurServices(
+              id,
+              updateFields.heading,
+              updateFields.home_image_path,
+              updateFields.home_data,
+              updateFields.image_path,
+              updateFields.description
+          );
+
+          // Delete old image files if they exist and are different from new ones
+          if (oldImagePath && newImagePath && oldImagePath !== newImagePath) {
+              const oldImageFilePath = path.join('uploads/our_services/', oldImagePath);
+              if (fs.existsSync(oldImageFilePath)) {
+                  fs.unlinkSync(oldImageFilePath);
+              }
           }
-        }
-  
-        if (oldHomeImagePath && home_image_path && oldHomeImagePath !== home_image_path) {
-          const oldHomeImageFilePath = path.join('uploads/our_services/', oldHomeImagePath);
-          if (fs.existsSync(oldHomeImageFilePath)) {
-            fs.unlinkSync(oldHomeImageFilePath);
+
+          if (oldHomeImagePath && newHomeImagePath && oldHomeImagePath !== newHomeImagePath) {
+              const oldHomeImageFilePath = path.join('uploads/our_services/', oldHomeImagePath);
+              if (fs.existsSync(oldHomeImageFilePath)) {
+                  fs.unlinkSync(oldHomeImageFilePath);
+              }
           }
-        }
-  
-        res.json({ message: 'Data updated successfully', affectedRows: result.affectedRows });
+
+          res.json({ message: 'Data updated successfully', affectedRows: result.affectedRows });
       } catch (error) {
-        res.status(500).json({ success: false, message: 'Failed to update data', error: error.message });
+          res.status(500).json({ success: false, message: 'Failed to update data', error: error.message });
       }
-    });
-  };
+  });
+};
+
+
+  
 
 module.exports = {
   createOurServices,

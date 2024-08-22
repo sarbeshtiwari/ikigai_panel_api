@@ -178,50 +178,65 @@ const updateBlogs = async (req, res) => {
   if (isNaN(id)) return res.status(400).json({ success: false, message: 'Invalid ID' });
 
   upload.single('image')(req, res, async (err) => {
-    if (err) return res.status(400).send(err.message);
+      if (err) return res.status(400).send(err.message);
 
-    const {
-      blogName, blogBy, blogDate, blogTags, blogLink, alt_tag, content, schema_data
-    } = req.body;
-    const slugURL = createSlug(blogName);
-    
-    const newImageFile = req.file;
-    const newImagePath = newImageFile ? newImageFile.path : null;
-    let newImagePublicId = newImageFile ? newImageFile.filename : null;
+      const {
+          blogName, blogBy, blogDate, blogTags, blogLink, alt_tag, content, schema_data
+      } = req.body;
+      const slugURL = createSlug(blogName);
+      
+     
+      const newImagePath = req.file ? req.file.path : null;
+      let image_path = null;  // Initially set to null, indicating no image
 
-    try {
-      // Get the current image path from the database
-      const oldImagePath = await getImagePathById(id);
-      let cloudinaryResult;
+      try {
+          // Get the current image path from the database
+          const oldImagePath = await getImagePathById(id);
+          
+          if (newImagePath) {
+              // Upload new image to Cloudinary if provided
+              const cloudinaryResult = await uploadToCloudinary(newImagePath);
+              image_path = cloudinaryResult.secure_url;
 
-      // Upload new image to Cloudinary if provided
-      if (newImagePath) {
-        cloudinaryResult = await uploadToCloudinary(newImagePath);
-        newImagePublicId = cloudinaryResult.secure_url;
+              // Remove old image from Cloudinary if it exists and is different
+              if (oldImagePath && oldImagePath !== image_path) {
+                  await deleteFromCloudinary(oldImagePath);
+              }
+          } else {
+              // If no new image is provided, keep the old image path
+              image_path = oldImagePath;
+          }
 
-        // Remove old image from Cloudinary if it exists and is different
-        if (oldImagePath && oldImagePath !== newImagePublicId) {
-          await deleteFromCloudinary(oldImagePath);
-        }
+          // Update the blog entry in the database
+          const result = await updateBlog(
+              id, 
+              blogName, 
+              blogBy, 
+              blogDate, 
+              blogTags, 
+              blogLink, 
+              alt_tag, 
+              content, 
+              schema_data, 
+              image_path, // This will be null if no new image is uploaded
+              slugURL
+          );
+
+          // Delete the temporary file if a new image was uploaded
+          if (newImagePath) {
+              fs.unlink(newImagePath, (err) => {
+                  if (err) console.error('Failed to delete temporary file:', err);
+              });
+          }
+
+          res.json({ message: 'Data updated successfully', affectedRows: result.affectedRows });
+      } catch (error) {
+          console.error('Update Error:', error);
+          res.status(500).json({ message: 'Failed to update data', error: error.message });
       }
-
-      // Update the blog entry in the database
-      const result = await updateBlog(id, blogName, blogBy, blogDate, blogTags, blogLink, alt_tag, content, schema_data, newImagePublicId, slugURL);
-
-      // Delete the temporary file
-      if (newImagePath) {
-        fs.unlink(newImagePath, (err) => {
-          if (err) console.error('Failed to delete temporary file:', err);
-        });
-      }
-
-      res.json({ message: 'Data updated successfully', affectedRows: result.affectedRows });
-    } catch (error) {
-      console.error('Update Error:', error);
-      res.status(500).json({ message: 'Failed to update data', error: error.message });
-    }
   });
 };
+
 
 module.exports = {
     createBlog, getBlogs, getBlogById, getBlogBySlugURL, getRecentBlogs, updateBlogStatus, deleteBlog, updateBlogs, upload,

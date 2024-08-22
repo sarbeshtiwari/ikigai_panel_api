@@ -33,10 +33,25 @@ on editing image is not prefilled in anyone prefilled it
 delete image from cloudnery {DONE}
 
 21-08-2024
-header and footer {Done} {Update and fetch pending}
+
+
 slug url {DONE}
-image formating {Done} {pending, bannerimage, home banner} 
+
 home banner validation {DONE} 
-description column size (increase) 
+
 our team validation {Done}
-on editing image is not prefilled in anyone prefilled it {need help}
+
+
+
+
+22-08-24
+header and footer {Done}
+on editing image is not prefilled in anyone prefilled it (Done)
+image formating {Done} 
+description column size (increase)
+upload images in .webp format
+testimonial video
+limit image size
+svg to png convert {some svg are uploading some are not}
+ourServices (image auto update issue) {DONE}
+auto update image in every section {done}

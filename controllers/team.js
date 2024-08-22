@@ -145,11 +145,11 @@ const updateTeam = async (req, res) => {
     if (err) return res.status(400).send(err.message);
 
     const {
-        name, designation, heading, description
+      name, designation, heading, description
     } = req.body;
-    const newImageFile = req.file;
-    const newImagePath = newImageFile ? newImageFile.path : null;
-    let newImagePublicId = newImageFile ? newImageFile.filename : null;
+    
+    const newImagePath = req.file ? req.file.path : null;
+    let image_path = null; // Default to null
 
     try {
       const oldImagePath = await getImagePathByID(id);
@@ -158,15 +158,20 @@ const updateTeam = async (req, res) => {
       // Upload new image to Cloudinary if provided
       if (newImagePath) {
         cloudinaryResult = await uploadToCloudinary(newImagePath);
-        newImagePublicId = cloudinaryResult.secure_url;
+        image_path = cloudinaryResult.secure_url;
 
         // Remove old image from Cloudinary if it exists and is different
-        if (oldImagePath && oldImagePath !== newImagePublicId) {
+        if (oldImagePath && oldImagePath !== image_path) {
           await deleteFromCloudinary(oldImagePath);
         }
+      } else {
+        // No new image uploaded; keep the old image URL
+        image_path = oldImagePath;
       }
-      const result = await updateOurTeam(id, name, designation, heading, newImagePublicId, description);
 
+      const result = await updateOurTeam(id, name, designation, heading, image_path, description);
+
+      // Clean up temporary file if a new image was uploaded
       if (newImagePath) {
         fs.unlink(newImagePath, (err) => {
           if (err) console.error('Failed to delete temporary file:', err);
@@ -175,10 +180,12 @@ const updateTeam = async (req, res) => {
 
       res.json({ message: 'Data updated successfully', affectedRows: result.affectedRows });
     } catch (error) {
+      console.error('Update Error:', error);
       res.status(500).json({ message: 'Failed to update data', error: error.message });
     }
   });
 };
+
 
 module.exports = {
   createOurTeam,

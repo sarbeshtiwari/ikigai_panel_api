@@ -178,36 +178,37 @@ const updateAbout = async (req, res) => {
     if (err) return res.status(400).send(err.message);
 
     const {
-      
       heading,
       description
     } = req.body;
-    const newImageFile = req.file;
-    const newImagePath = newImageFile ? newImageFile.path : null;
-    let image_path = newImageFile ? newImageFile.filename : null;
+    
+    const newImagePath = req.file ? req.file.path : null;
+    let image_path = null; // Initialize image_path to null
 
     try {
       const oldImagePath = await getImagePathByID(id);
-      let cloudinaryResult;
 
-      // Upload new image to Cloudinary if provided
       if (newImagePath) {
-        cloudinaryResult = await uploadToCloudinary(newImagePath);
+        // Upload new image to Cloudinary
+        const cloudinaryResult = await uploadToCloudinary(newImagePath);
         image_path = cloudinaryResult.secure_url;
 
         // Remove old image from Cloudinary if it exists and is different
         if (oldImagePath && oldImagePath !== image_path) {
           await deleteFromCloudinary(oldImagePath);
         }
-      }
 
-      const result = await updateAboutUs(id, heading, description, image_path);
-
-      if (newImagePath) {
+        // Clean up temporary file
         fs.unlink(newImagePath, (err) => {
           if (err) console.error('Failed to delete temporary file:', err);
         });
+      } else {
+        // If no new image, keep the old image path
+        image_path = oldImagePath;
       }
+
+      // Update the data with the new or existing image path
+      const result = await updateAboutUs(id, heading, description, image_path);
 
       res.json({ message: 'Data updated successfully', affectedRows: result.affectedRows });
     } catch (error) {
@@ -215,6 +216,7 @@ const updateAbout = async (req, res) => {
     }
   });
 };
+
 
 module.exports = {
   createAboutUs,

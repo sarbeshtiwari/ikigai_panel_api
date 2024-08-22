@@ -30,8 +30,11 @@ const saveHomeBanner = (req, res) => {
   const mobileImagePaths = req.files['mobile_image'] || [];
   const tabletImagePaths = req.files['tablet_image'] || [];
 
+  // Ensure arrays are of the same length
+  const maxLength = Math.max(desktopImagePaths.length, mobileImagePaths.length, tabletImagePaths.length);
   const banners = [];
-  for (let i = 0; i < desktopImagePaths.length; i++) {
+
+  for (let i = 0; i < maxLength; i++) {
     banners.push({
       desktop_image_path: desktopImagePaths[i] ? desktopImagePaths[i].path : '',
       mobile_image_path: mobileImagePaths[i] ? mobileImagePaths[i].path : '',
@@ -43,7 +46,7 @@ const saveHomeBanner = (req, res) => {
   }
 
   // Check if all banners are empty
-  const allBannersEmpty = banners.every(banner => 
+  const allBannersEmpty = banners.every(banner =>
     !banner.desktop_image_path && 
     !banner.mobile_image_path && 
     !banner.tablet_image_path &&
@@ -56,38 +59,130 @@ const saveHomeBanner = (req, res) => {
     return res.status(400).send('Select at least one image and its alt tag');
   }
 
-  if (id) {
-    let updateCount = 0;
-    banners.forEach((banner, index) => {
-      updateHomeBanner(id, banner, (err) => {
+  const processBanner = (banner, callback) => {
+    if (id) {
+      let updateCount = 0;
+      banners.forEach((banner, index) => {
+        updateHomeBanner(id, banner, (err) => {
+          if (err) {
+            console.error('Error updating banner:', err);
+            res.status(500).send('Error updating banner');
+            return;
+          }
+          updateCount++;
+          if (updateCount === banners.length) {
+            res.send('Banners updated successfully');
+          }
+        });
+      });
+    } else {
+      let insertCount = 0;
+      banners.forEach((banner) => {
+        insertBanner(banner, (err) => {
+          if (err) {
+            console.error('Error inserting banner:', err);
+            res.status(500).send('Error inserting banner');
+            return;
+          }
+          insertCount++;
+          if (insertCount === banners.length) {
+            res.send('Banners added successfully');
+          }
+        });
+      });
+    }
+  };
+
+  let processedCount = 0;
+  const totalBanners = banners.length;
+
+  if (totalBanners > 0) {
+    banners.forEach(banner => {
+      processBanner(banner, (err) => {
         if (err) {
-          console.error('Error updating banner:', err);
-          res.status(500).send('Error updating banner');
+          console.error('Error processing banner:', err);
+          res.status(500).send('Error processing banner');
           return;
         }
-        updateCount++;
-        if (updateCount === banners.length) {
-          res.send('Banners updated successfully');
+        processedCount++;
+        if (processedCount === totalBanners) {
+          res.send(id ? 'Banners updated successfully' : 'Banners added successfully');
         }
       });
     });
   } else {
-    let insertCount = 0;
-    banners.forEach((banner) => {
-      insertBanner(banner, (err) => {
-        if (err) {
-          console.error('Error inserting banner:', err);
-          res.status(500).send('Error inserting banner');
-          return;
-        }
-        insertCount++;
-        if (insertCount === banners.length) {
-          res.send('Banners added successfully');
-        }
-      });
-    });
+    res.status(400).send('No banners to process');
   }
 };
+
+// const saveHomeBanner = (req, res) => {
+//   const id = req.params.id;
+//   const alt_tags_desktop = req.body['alt_tag_desktop'] || [];
+//   const alt_tags_mobile = req.body['alt_tag_mobile'] || [];
+//   const alt_tags_tablet = req.body['alt_tag_tablet'] || [];
+
+//   const desktopImagePaths = req.files['desktop_image'] || [];
+//   const mobileImagePaths = req.files['mobile_image'] || [];
+//   const tabletImagePaths = req.files['tablet_image'] || [];
+
+//   const banners = [];
+//   for (let i = 0; i < desktopImagePaths.length; i++) {
+//     banners.push({
+//       desktop_image_path: desktopImagePaths[i] ? desktopImagePaths[i].path : '',
+//       mobile_image_path: mobileImagePaths[i] ? mobileImagePaths[i].path : '',
+//       tablet_image_path: tabletImagePaths[i] ? tabletImagePaths[i].path : '',
+//       alt_tag_desktop: alt_tags_desktop || '',
+//       alt_tag_mobile: alt_tags_mobile || '',
+//       alt_tag_tablet: alt_tags_tablet || ''
+//     });
+//   }
+
+//   // Check if all banners are empty
+//   const allBannersEmpty = banners.every(banner => 
+//     !banner.desktop_image_path && 
+//     !banner.mobile_image_path && 
+//     !banner.tablet_image_path &&
+//     !banner.alt_tag_desktop && 
+//     !banner.alt_tag_mobile && 
+//     !banner.alt_tag_tablet
+//   );
+
+//   if (allBannersEmpty) {
+//     return res.status(400).send('Select at least one image and its alt tag');
+//   }
+
+//   if (id) {
+//     let updateCount = 0;
+//     banners.forEach((banner, index) => {
+//       updateHomeBanner(id, banner, (err) => {
+//         if (err) {
+//           console.error('Error updating banner:', err);
+//           res.status(500).send('Error updating banner');
+//           return;
+//         }
+//         updateCount++;
+//         if (updateCount === banners.length) {
+//           res.send('Banners updated successfully');
+//         }
+//       });
+//     });
+//   } else {
+//     let insertCount = 0;
+//     banners.forEach((banner) => {
+//       insertBanner(banner, (err) => {
+//         if (err) {
+//           console.error('Error inserting banner:', err);
+//           res.status(500).send('Error inserting banner');
+//           return;
+//         }
+//         insertCount++;
+//         if (insertCount === banners.length) {
+//           res.send('Banners added successfully');
+//         }
+//       });
+//     });
+//   }
+// };
 
 
 const getAllBanners = async (req, res) => {

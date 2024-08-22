@@ -231,8 +231,10 @@ const getImagePathByID = (id) => {
     db.query(query, [id], (err, results) => {
       if (err) return reject(err);
       if (results.length === 0) return reject(new Error('Our Services not found'));
-      console.log(results[0].home_image_path)
-      resolve(results[0].image_path, results[0].home_image_path);
+      resolve({
+        oldImagePath: results[0].image_path,
+        oldHomeImagePath: results[0].home_image_path
+      });
     });
   });
 };

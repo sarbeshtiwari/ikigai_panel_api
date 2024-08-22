@@ -1,7 +1,7 @@
 const multer = require('multer');
 const { CloudinaryStorage } = require('multer-storage-cloudinary');
 const cloudinary = require('../config/im');
-const { saveFormData, getAllDetails } = require('../model/header_footer');
+const { saveFormData, getAllDetails, getLogoStatus, updateFormData } = require('../model/header_footer');
 const path = require('path');
 const fs = require('fs');
 
@@ -92,7 +92,72 @@ const getDetails = async (req, res) => {
     }
   };
 
+  const updateDetails = async (req, res) => {
+    const id = parseInt(req.params.id, 10);
+  if (isNaN(id)) return res.status(400).json({ success: false, message: 'Invalid ID' });
+    try {
+        upload.single('logo')(req, res, async (err) => {
+            if (err) return res.status(400).send(err.message);
+
+            // Retrieve the uploaded logo file path if available
+            const logoPath = req.file ? req.file.path : null;
+
+            let logoUrl = null;
+
+            try {
+                // If no new logo file is uploaded, check the existing logo URL from the database
+
+                if (!logoPath) {
+                    const existingLogo = await getLogoStatus();
+                    console.log(existingLogo);
+                    if (existingLogo) {
+                        logoUrl = existingLogo;
+                    } else {
+                        return res.status(400).json({ success: false, message: 'No file uploaded and no existing logo found' });
+                    }
+                } else {
+                    // Upload the new logo image to Cloudinary
+                    const cloudinaryResult = await uploadToCloudinary(logoPath);
+                    logoUrl = cloudinaryResult.secure_url;
+                }
+
+                // Parse the form data
+                const { phone_number, footer_title, footer_description, address, contact_phones, email, existingLogo } = req.body;
+                const buttons = JSON.parse(req.body.buttons);
+
+                // Save form data including the logo URL
+                const result = await updateFormData({
+                    logo: existingLogo,
+                    buttons,
+                    phone_number,
+                    footer_title,
+                    footer_description,
+                    address,
+                    contact_phones,
+                    email,
+                    id
+                });
+
+                res.status(201).json({ success: true, result });
+            } catch (dbError) {
+                console.error('Database Error:', dbError);
+                res.status(500).json({ success: false, message: 'Database Error: ' + dbError.message });
+            } finally {
+                // Clean up the uploaded logo file if it was uploaded
+                if (logoPath) {
+                    fs.unlink(logoPath, (err) => {
+                        if (err) console.error('Failed to delete temporary file:', err);
+                    });
+                }
+            }
+        });
+    } catch (error) {
+        console.error('Server Error:', error);
+        res.status(500).json({ success: false, message: 'Server Error: ' + error.message });
+    }
+};
+
 
 module.exports = {
-    submitForm, getDetails
+    submitForm, getDetails, updateDetails
 };
