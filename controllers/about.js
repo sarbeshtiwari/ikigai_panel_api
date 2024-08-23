@@ -182,7 +182,7 @@ const deleteAboutUs = async (req, res) => {
     const imagePath = await getImagePathByID(id);
     if (imagePath) await deleteFromCloudinary(imagePath);
     
-    // await deleteAboutUsFromDB(id);
+    await deleteAboutUsFromDB(id);
     res.status(200).json({ success: true, message: 'about us deleted successfully' });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
