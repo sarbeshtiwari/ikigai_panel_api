@@ -60,5 +60,5 @@ auto update image in every section {done}
 
 
 mail has to be send to user also (content update)
-metsa details on website
+meta details on website (shared)
 about section spacing
