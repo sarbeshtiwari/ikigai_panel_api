@@ -25,7 +25,14 @@ const headerFooter = require('./routes/header_footer');
 
 // const __filename = fileURLToPath(import.meta.url);
 // const __dirname = path.dirname(__filename);
-app.use(cors());
+const corsOptions = {
+  origin: function (origin, callback) {
+    callback(null, origin); 
+  },
+  credentials: true,
+};
+app.use(cors(corsOptions));
+
 // Middleware to parse JSON bodies
 app.use(express.json({ limit: '100mb' }));
 

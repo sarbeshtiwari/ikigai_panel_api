@@ -46,14 +46,32 @@ const uploadToCloudinary = async (filePath) => {
   }
 };
 
-const deleteFromCloudinary = async (publicId) => {
-try {
-  await cloudinary.uploader.destroy(publicId);
-} catch (error) {
-  console.error('Cloudinary Delete Error:', error);
-  throw error;
-}
+const deleteFromCloudinary = async (imageUrl) => {
+  try {
+    // Extract the public_id from the URL
+    const publicId = extractPublicIdFromUrl(imageUrl);
+    console.log(publicId);
+    
+    // Delete the image using the public_id
+    const result = await cloudinary.uploader.destroy(publicId);
+    console.log(result);
+    console.log('Image deleted successfully');
+  } catch (error) {
+    console.error('Cloudinary Delete Error:', error);
+    throw error;
+  }
 };
+
+const extractPublicIdFromUrl = (url) => {
+  // Extract the public_id from the Cloudinary URL
+  const regex = /\/image\/upload\/(?:v\d+\/)?(.*?)(?:\.[a-z0-9]+)?$/i;
+  
+  const match = url.match(regex);
+  return match ? match[1] : null;
+};
+
+
+
 
 const createAboutUs = async (req, res) => {
   try {
@@ -74,13 +92,15 @@ const createAboutUs = async (req, res) => {
       } = req.body;
 
       const cloudinaryResult = await uploadToCloudinary(tempFilePath);
+      console.log(cloudinaryResult.public_id);
       const image_path = cloudinaryResult.secure_url;
       try {
         const result = await addAbout(heading, description, image_path);
         res.status(201).json({ success: true, result });
       } catch (dbError) {
         res.status(500).json({ success: false, message: dbError.message });
-      } finally {
+      } 
+      finally {
         fs.unlink(tempFilePath, (err) => {
           if (err) console.error('Failed to delete temporary file:', err);
         });
@@ -162,7 +182,7 @@ const deleteAboutUs = async (req, res) => {
     const imagePath = await getImagePathByID(id);
     if (imagePath) await deleteFromCloudinary(imagePath);
     
-    await deleteAboutUsFromDB(id);
+    // await deleteAboutUsFromDB(id);
     res.status(200).json({ success: true, message: 'about us deleted successfully' });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
