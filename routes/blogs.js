@@ -19,7 +19,7 @@ router.get('/get', getBlogs);
 router.get('/getByID/:id', getBlogById);
 
 // Route to get blog by ID
-router.get('/getBySlug/:id', getBlogBySlugURL);
+router.get('/getBySlug/:slugURL', getBlogBySlugURL);
 
 // Route to get blog by ID
 router.get('/getRecentBlogs', getRecentBlogs);

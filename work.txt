@@ -57,8 +57,11 @@ ourServices (image auto update issue) {DONE}
 auto update image in every section {done}
 
 
+23-08-2024
 
-
-mail has to be send to user also (content update)
+header footer UI (Working)
+dashboard (Working)
+mail has to be send to user also (content update) (Done)
 meta details on website (shared)
-about section spacing
+about section spacing (Done)
+source in quill editor

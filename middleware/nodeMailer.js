@@ -28,7 +28,7 @@ const sendQueryEmail = async (name, phoneNumber, email, user_message) => {
       ${user_message}
 
       Best regards,
-      Your Team
+      IKIGAI Wellness
     `,
     html: `
       <p>Dear Team,</p>
@@ -54,7 +54,7 @@ const sendQueryEmail = async (name, phoneNumber, email, user_message) => {
         </tr>
       </table>
 
-      <p>Best regards,<br>Your Team</p>
+      <p>Best regards,<br>IKIGAI Wellness</p>
     `
   };
 
@@ -76,7 +76,7 @@ const sendQueryEmail = async (name, phoneNumber, email, user_message) => {
       ${user_message}
 
       Best regards,
-      Your Team
+      IKIGAI Wellness
     `,
     html: `
       <p>Dear ${name},</p>
@@ -100,7 +100,7 @@ const sendQueryEmail = async (name, phoneNumber, email, user_message) => {
         </tr>
       </table>
 
-      <p>Best regards,<br>Your Team</p>
+      <p>Best regards,<br>IKIGAI Wellness</p>
     `
   };
 
@@ -134,7 +134,7 @@ const sendAppointmentEmail = async (name, phoneNumber, email) => {
           Email: ${email}
 
           Best regards,
-          Your Team
+          IKIGAI Wellness
       `,
       html: `
           <p>Dear Team,</p>
@@ -156,7 +156,7 @@ const sendAppointmentEmail = async (name, phoneNumber, email) => {
               </tr>
           </table>
 
-          <p>Best regards,<br>Your Team</p>
+          <p>Best regards,<br>IKIGAI Wellness</p>
       `
   };
 
@@ -175,7 +175,7 @@ const sendAppointmentEmail = async (name, phoneNumber, email) => {
           Email: ${email}
 
           Best regards,
-          Your Team
+          IKIGAI Wellness
       `,
       html: `
           <p>Dear ${name},</p>
@@ -195,7 +195,7 @@ const sendAppointmentEmail = async (name, phoneNumber, email) => {
               </tr>
           </table>
 
-          <p>Best regards,<br>Your Team</p>
+          <p>Best regards,<br>IKIGAI Wellness</p>
       `
   };
 

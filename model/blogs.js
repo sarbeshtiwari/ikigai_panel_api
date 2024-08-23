@@ -65,9 +65,11 @@ const getBlogsById = (id) => {
 };
 
 const getBlogsBySlug = (slugURL) => {
+    console.log(slugURL.slugURL)
     const query = 'SELECT * FROM blogs WHERE slugURL = ?';
+    
     return new Promise((resolve, reject) => {
-        db.query(query, [slugURL], (err, results) => {
+        db.query(query, [slugURL.slugURL], (err, results) => {
             if (err) return reject(err);
             if (results.length === 0) return reject(new Error('Blog not found')); 
             resolve(results[0]);

@@ -135,6 +135,7 @@ const getBlogById = async (req, res) => {
 //get blog by ID
 const getBlogBySlugURL = async (req, res) => {
   const slugURL = req.params
+  console.log(slugURL);
   try {
       const result = await getBlogsBySlug(slugURL);
       res.status(200).json({ success: true, data: result });
