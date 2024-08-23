@@ -44,6 +44,7 @@ const updateFormData = async (data) => {
     
     return new Promise((resolve, reject) => {
         const { logo, buttons, phone_number, footer_title, footer_description, address, contact_phones, email, id} = data;
+        console.log(data);
         const query = 'UPDATE header_footer SET  logo = ?, buttons = ?, phone_number = ?, footer_title = ?, footer_description = ? , address = ?, contact_phones = ?, email = ? WHERE id = ?'
         const values = [logo, JSON.stringify(buttons), phone_number, footer_title, footer_description, address, contact_phones, email, id];
 

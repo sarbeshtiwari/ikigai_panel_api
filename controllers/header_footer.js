@@ -94,7 +94,7 @@ const getDetails = async (req, res) => {
 
   const updateDetails = async (req, res) => {
     const id = parseInt(req.params.id, 10);
-  if (isNaN(id)) return res.status(400).json({ success: false, message: 'Invalid ID' });
+    if (isNaN(id)) return res.status(400).json({ success: false, message: 'Invalid ID' });
     try {
         upload.single('logo')(req, res, async (err) => {
             if (err) return res.status(400).send(err.message);
@@ -109,9 +109,11 @@ const getDetails = async (req, res) => {
 
                 if (!logoPath) {
                     const existingLogo = await getLogoStatus();
-                    console.log(existingLogo);
+                   
                     if (existingLogo) {
                         logoUrl = existingLogo;
+
+                        console.log(logoUrl);
                     } else {
                         return res.status(400).json({ success: false, message: 'No file uploaded and no existing logo found' });
                     }
@@ -122,12 +124,13 @@ const getDetails = async (req, res) => {
                 }
 
                 // Parse the form data
-                const { phone_number, footer_title, footer_description, address, contact_phones, email, existingLogo } = req.body;
+                const { phone_number, footer_title, footer_description, address, contact_phones, email, logo } = req.body;
                 const buttons = JSON.parse(req.body.buttons);
+                console.log(req.body);
 
                 // Save form data including the logo URL
                 const result = await updateFormData({
-                    logo: existingLogo,
+                    logo,
                     buttons,
                     phone_number,
                     footer_title,
