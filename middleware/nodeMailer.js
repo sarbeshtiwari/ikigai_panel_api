@@ -29,9 +29,11 @@ const sendQueryEmail = async (name, phoneNumber, email, user_message) => {
 
         Best regards,
         IKIGAI Wellness
-        123 Business St,
-        Business City, BC 12345
-        Phone: (123) 456-7890
+                      HS-11, Kailash Colony Market,
+                      Greater Kailash-1, Kailash Colony, 
+                      Greater Kailash,
+                      New Delhi-110048
+                      Phone: +91 7678483376, +91 9625089470
             `,
     html: `
       <!DOCTYPE html>
@@ -92,12 +94,14 @@ const sendQueryEmail = async (name, phoneNumber, email, user_message) => {
           <div class="container">
               <!-- Header -->
               <div class="header">
-                  <img src="https://res.cloudinary.com/dmf5snnz9/image/upload/v1724322699/uploads/testimonials/logo.png.png" alt="Company Logo">
+                  <img src="https://res.cloudinary.com/dmf5snnz9/image/upload/v1724322699/uploads/testimonials/logo.png.png" style="max-width: 120px; alt="Company Logo">
                   <div class="company-info">
                       <strong>IKIGAI Wellness</strong><br>
-                      123 Business St,<br>
-                      Business City, BC 12345<br>
-                      Phone: (123) 456-7890
+                      HS-11, Kailash Colony Market,<br> 
+                      Greater Kailash-1, Kailash Colony,<br> 
+                      Greater Kailash, <br>
+                      New Delhi-110048 <br>
+                      Phone: +91 7678483376, +91 9625089470
                   </div>
               </div>
               <!-- Banner -->
@@ -153,9 +157,11 @@ const sendQueryEmail = async (name, phoneNumber, email, user_message) => {
     
     Best regards,
     IKIGAI Wellness
-    123 Business St,
-    Business City, BC 12345
-    Phone: (123) 456-7890
+                      HS-11, Kailash Colony Market,
+                      Greater Kailash-1, Kailash Colony, 
+                      Greater Kailash,
+                      New Delhi-110048
+                      Phone: +91 7678483376, +91 9625089470
         `,
         html: `
     <!DOCTYPE html>
@@ -216,14 +222,16 @@ const sendQueryEmail = async (name, phoneNumber, email, user_message) => {
         <div class="container">
             <!-- Header -->
             <div class="header">
-                <img src="https://res.cloudinary.com/dmf5snnz9/image/upload/v1724322699/uploads/testimonials/logo.png.png" alt="Company Logo">
-                <div class="company-info">
-                    <strong>IKIGAI Wellness</strong><br>
-                    123 Business St,<br>
-                    Business City, BC 12345<br>
-                    Phone: (123) 456-7890
-                </div>
-            </div>
+                  <img src="https://res.cloudinary.com/dmf5snnz9/image/upload/v1724322699/uploads/testimonials/logo.png.png" style="max-width: 120px; alt="Company Logo">
+                  <div class="company-info">
+                      <strong>IKIGAI Wellness</strong><br>
+                      HS-11, Kailash Colony Market,<br> 
+                      Greater Kailash-1, Kailash Colony,<br> 
+                      Greater Kailash, <br>
+                      New Delhi-110048 <br>
+                      Phone: +91 7678483376, +91 9625089470
+                  </div>
+              </div>
             <!-- Banner -->
             <img src="https://res.cloudinary.com/dmf5snnz9/image/upload/v1724129940/uploads/our_specialities/tailored-solutions.jpg.jpg" alt="Banner Image" class="banner">
             <!-- Main Content -->
@@ -271,84 +279,240 @@ const sendQueryEmail = async (name, phoneNumber, email, user_message) => {
 
 const sendAppointmentEmail = async (name, phoneNumber, email) => {
   const adminMailOptions = {
-      from: 'sarbesh39tiwari@gmail.com',
-      to: 'rahul8454454singh@gmail.com',
-      subject: 'New User Appointment Received',
-      text: `
-          Dear Team,
+    from: 'sarbesh39tiwari@gmail.com',
+    to: 'rahul8454454singh@gmail.com',
+    subject: 'New User Appointment Received',
+    text: `
+Dear Team,
 
-          We have received a new appointment request. Below are the details:
+We have received a new appointment request. Below are the details:
 
-          Name: ${name}
-          Phone Number: ${phoneNumber}
-          Email: ${email}
+Name: ${name}
+Phone Number: ${phoneNumber}
+Email: ${email}
 
-          Best regards,
-          IKIGAI Wellness
-      `,
-      html: `
-          <p><strong>Dear Team,</strong></p>
+Best regards,
+IKIGAI Wellness
+HS-11, Kailash Colony Market,
+Greater Kailash-1, Kailash Colony,
+Greater Kailash,
+New Delhi-110048
+Phone: +91 7678483376, +91 9625089470
+    `,
+    html: `
+<!DOCTYPE html>
+<html>
+<head>
+    <title>New User Appointment Received</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+        }
+        .container {
+            width: 100%;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            box-sizing: border-box;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background-color: #ffffff;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 20px;
+        }
+        .header img {
+            max-width: 150px;
+        }
+        .header .company-info {
+            text-align: right;
+        }
+        .banner {
+            width: 100%;
+            height: auto;
+            margin-bottom: 20px;
+        }
+        .content {
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+        }
+        table {
+            width: 100%;
+            border: 1px solid black;
+            border-collapse: collapse;
+        }
+        table td {
+            border: 1px solid black;
+            padding: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <img src="https://res.cloudinary.com/dmf5snnz9/image/upload/v1724322699/uploads/testimonials/logo.png.png" style="max-width: 120px; alt="Company Logo">
+            <div class="company-info">
+                <strong>IKIGAI Wellness</strong><br>
+                HS-11, Kailash Colony Market,<br>
+                Greater Kailash-1, Kailash Colony,<br>
+                Greater Kailash,<br>
+                New Delhi-110048<br>
+                Phone: +91 7678483376, +91 9625089470
+            </div>
+        </div>
+        <!-- Banner -->
+        <img src="https://res.cloudinary.com/dmf5snnz9/image/upload/v1724129940/uploads/our_specialities/tailored-solutions.jpg.jpg" alt="Banner Image" class="banner">
+        <!-- Main Content -->
+        <div class="content">
+            <p><strong>Dear Team,</strong></p>
+            <p>We have received a new appointment request. Below are the details:</p>
+            <table>
+                <tr>
+                    <td><strong>Name:</strong></td>
+                    <td>${name}</td>
+                </tr>
+                <tr>
+                    <td><strong>Phone Number:</strong></td>
+                    <td>${phoneNumber}</td>
+                </tr>
+                <tr>
+                    <td><strong>Email:</strong></td>
+                    <td>${email}</td>
+                </tr>
+            </table>
+            <p>Best regards,<br><img src="https://res.cloudinary.com/dmf5snnz9/image/upload/v1724322699/uploads/testimonials/logo.png.png" alt="Signature Image" style="max-width: 120px;"></p>
+        </div>
+    </div>
+</body>
+</html>
+    `
+};
 
-          <p>We have received a new appointment request. Below are the details:</p>
 
-          <table style="border: 1px solid black; border-collapse: collapse;">
-          <tr>
-              <td style="border: 1px solid black;"><strong>Name:</strong></td>
-              <td style="border: 1px solid black;">${name}</td>
-          </tr>
-            <tr>
-              <td style="border: 1px solid black;"><strong>Phone Number:</strong></td>
-              <td style="border: 1px solid black;">${phoneNumber}</td>
-          </tr>
-          <tr>
-              <td style="border: 1px solid black;"><strong>Email:</strong></td>
-              <td style="border: 1px solid black;">${email}</td>
-          </tr>
-          
-          </table>
+const userMailOptions = {
+  from: 'sarbesh39tiwari@gmail.com',
+  to: email,
+  subject: 'Appointment Confirmation',
+  text: `
+Dear ${name},
 
-          <p>Best regards,<br>IKIGAI Wellness</p>
-      `
-  };
+Thank you for scheduling an appointment with us. We have received your appointment request and will get back to you with further details shortly.
 
-  const userMailOptions = {
-      from: 'sarbesh39tiwari@gmail.com',
-      to: email,
-      subject: 'Appointment Confirmation',
-      text: `
-          Dear ${name},
+Here are the details of your appointment request:
 
-          Thank you for scheduling an appointment with us. We have received your appointment request and will get back to you with further details shortly.
+Phone Number: ${phoneNumber}
+Email: ${email}
 
-          Here are the details of your appointment request:
-          
-          Phone Number: ${phoneNumber}
-          Email: ${email}
-
-          Best regards,
-          IKIGAI Wellness
-      `,
-      html: `
+Best regards,
+IKIGAI Wellness
+HS-11, Kailash Colony Market,
+Greater Kailash-1, Kailash Colony,
+Greater Kailash,
+New Delhi-110048
+Phone: +91 7678483376, +91 9625089470
+  `,
+  html: `
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Appointment Confirmation</title>
+  <style>
+      body {
+          margin: 0;
+          padding: 0;
+          font-family: Arial, sans-serif;
+      }
+      .container {
+          width: 100%;
+          max-width: 600px;
+          margin: 0 auto;
+          padding: 20px;
+          box-sizing: border-box;
+          border: 1px solid #ddd;
+          border-radius: 5px;
+          background-color: #ffffff;
+      }
+      .header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          padding-bottom: 20px;
+      }
+      .header img {
+          max-width: 150px;
+      }
+      .header .company-info {
+          text-align: right;
+      }
+      .banner {
+          width: 100%;
+          height: auto;
+          margin-bottom: 20px;
+      }
+      .content {
+          padding: 20px;
+          border: 1px solid #ddd;
+          border-radius: 5px;
+          background-color: #f9f9f9;
+      }
+      table {
+          width: 100%;
+          border: 1px solid black;
+          border-collapse: collapse;
+      }
+      table td {
+          border: 1px solid black;
+          padding: 8px;
+      }
+  </style>
+</head>
+<body>
+  <div class="container">
+      <!-- Header -->
+      <div class="header">
+          <img src="https://res.cloudinary.com/dmf5snnz9/image/upload/v1724322699/uploads/testimonials/logo.png.png" style="max-width: 120px; alt="Company Logo">
+          <div class="company-info">
+              <strong>IKIGAI Wellness</strong><br>
+              HS-11, Kailash Colony Market,<br>
+              Greater Kailash-1, Kailash Colony,<br>
+              Greater Kailash,<br>
+              New Delhi-110048<br>
+              Phone: +91 7678483376, +91 9625089470
+          </div>
+      </div>
+      <!-- Banner -->
+      <img src="https://res.cloudinary.com/dmf5snnz9/image/upload/v1724129940/uploads/our_specialities/tailored-solutions.jpg.jpg" alt="Banner Image" class="banner">
+      <!-- Main Content -->
+      <div class="content">
           <p>Dear <strong>${name}</strong>,</p>
-
           <p>Thank you for scheduling an appointment with us. We have received your appointment request and will get back to you with further details shortly.</p>
-
           <p>Here are the details of your appointment request:</p>
-
           <table>
               <tr>
-              <td style="border: 1px solid black;"><strong>Phone Number:</strong></td>
-              <td style="border: 1px solid black;">${phoneNumber}</td>
-          </tr>
-          <tr>
-              <td style="border: 1px solid black;"><strong>Email:</strong></td>
-              <td style="border: 1px solid black;">${email}</td>
-          </tr>
+                  <td><strong>Phone Number:</strong></td>
+                  <td>${phoneNumber}</td>
+              </tr>
+              <tr>
+                  <td><strong>Email:</strong></td>
+                  <td>${email}</td>
+              </tr>
           </table>
+          <p>Best regards,<br><img src="https://res.cloudinary.com/dmf5snnz9/image/upload/v1724322699/uploads/testimonials/logo.png.png" alt="Signature Image" style="max-width: 120px;"></p>
+      </div>
+  </div>
+</body>
+</html>
+  `
+};
 
-          <p>Best regards,<br>IKIGAI Wellness</p>
-      `
-  };
 
   try {
       // Send email to admin
