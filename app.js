@@ -1,7 +1,7 @@
 const http = require('http');
 const express = require('express');
 const app = express();
-const port = process.env.PORT || 1000;
+const port = process.env.PORT || 8080;
 require('dotenv').config();
 const path = require('path');
 const bodyParser = require('body-parser');
@@ -56,7 +56,7 @@ app.use('/userQuery', userQuery);
 app.use('/appointment', appointment);
 app.use('/auth', authRoutes);
 app.use('/headerFooter', headerFooter);
-app.use('/api', protectedRoutes);
+app.use('/protected', protectedRoutes);
 
 
 // Start the server
